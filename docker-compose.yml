@@ -1,0 +1,13 @@
+version: "3"
+
+services:
+  api-server:
+    image: rust:latest
+    container_name: api-server
+    working_dir: /workspace
+    command: cargo run --package qr-api-server --bin qr-api-server -- --bind 0.0.0.0:3000
+    tty: true
+    volumes:
+      - ./:/workspace
+    ports:
+      - 3000:3000
