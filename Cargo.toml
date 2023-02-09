@@ -1,4 +1,9 @@
 [workspace]
 members = [
-  "qr-api-server",
+    "qr-api-server",
+    "qr-context",
+    "qr-database",
+    "qr-domain",
+    "qr-run-migrations",
+    "qr-use-case"
 ]
