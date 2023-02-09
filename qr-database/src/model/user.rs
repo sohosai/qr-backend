@@ -6,13 +6,15 @@ use chrono::{DateTime, Utc};
 pub enum UserRole {
     Administrator,
     EquipmentManager,
-    General
+    General,
 }
 
 #[derive(Debug, Clone, sqlx::FromRow)]
 pub struct User {
-  pub id: String,
-  pub created_at: DateTime<Utc>,
-  pub email: String,
-  pub role: UserRole,
+    pub id: String,
+    pub created_at: DateTime<Utc>,
+    pub first_name: String,
+    pub last_name: String,
+    pub email: String,
+    pub role: UserRole,
 }
