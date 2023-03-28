@@ -13,21 +13,6 @@ CREATE TABLE places (
 CREATE TABLE containers (
     id uuid PRIMARY KEY,
     container_name varchar(256) NOT NULL,
-
-);
-
-CREATE TABLE link_item_status (
-    id uuid NOT NULL,
-    item_id uuid NOT NULL,
-    linked_status_id uuid NOT NULL,
-);
-
-CREATE INDEX ON link_item_status ( item_id );
-
-CREATE TABLE item_status (
-    id uuid PRIMARY KEY,
-    status_name varchar(256) NOT NULL,
-    details varchar(1024),
 );
 
 CREATE TABLE onwers (
@@ -49,3 +34,20 @@ CREATE TABLE items (
     FOREIGN KEY (container_id) REFERENCES containers (id),
     FOREIGN KEY (owner_id) REFERENCES owners (id),
 );
+
+CREATE TABLE item_status (
+    id uuid PRIMARY KEY,
+    status_name varchar(256) NOT NULL,
+    details varchar(1024),
+);
+
+CREATE TABLE link_item_status (
+    id uuid NOT NULL,
+    item_id uuid NOT NULL,
+    linked_status_id uuid NOT NULL,
+    FOREIGN KEY (item_id) REFERENCES items (id) ON DELETE CASCADE,
+    FOREIGN KEY (linked_status_id) REFERENCES item_status (id),
+);
+
+CREATE INDEX ON link_item_status ( item_id );
+CREATE INDEX ON link_item_status ( link_item_status );
