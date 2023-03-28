@@ -35,6 +35,8 @@ CREATE TABLE items (
     FOREIGN KEY (owner_id) REFERENCES owners (id),
 );
 
+CREATE INDEX ON items ( qr_id );
+
 CREATE TABLE item_status (
     id uuid PRIMARY KEY,
     status_name varchar(256) NOT NULL,
