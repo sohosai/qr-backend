@@ -1,9 +1,39 @@
-[workspace]
-members = [
-    "qr-api-server",
-    "qr-context",
-    "qr-database",
-    "qr-domain",
-    "qr-run-migrations",
-    "qr-use-case"
-]
+[package]
+name = "qr-backend"
+authors = ["momeemt <me@momee.mt>", "puripuri2100 <puripuri2100@gmail.com>"]
+version = "0.0.1"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1.0.71"
+chrono = "0.4.26"
+reqwest = { version = "0.11.18", features = ["json", "rustls-tls"] }
+serde = { version = "1.0.166", features = ["derive"] }
+serde_json = "1.0.100"
+sqlx = "0.7.0"
+structopt = "0.3.26"
+thiserror = "1.0.41"
+tokio = { version = "1.29.1", features = ["full"] }
+tracing = "0.1.37"
+tracing-subscriber = "0.3.17"
+url = "2.4.0"
+warp = "0.3.5"
+#tokio = { version = "1.25.0", features = ["full"] }
+#serde = { version = "1.0.152", features = ["derive"] }
+#warp = { version = "0.3.3", default-features = false }
+#tracing = "0.1.37"
+#tracing-futures = "0.2.5"
+#tracing-subscriber = "0.3.16"
+#futures = "0.3.26"
+#anyhow = "1.0.69"
+#structopt = "0.3.26"
+#async-trait = "0.1.64"
+#thiserror = "1.0.38"
+#chrono = "0.4.23"
+#sqlx = { git = "https://github.com/launchbadge/sqlx", features = ["postgres", "runtime-tokio-rustls"] }
+#jsonwebtoken = "8.2.0"
+#reqwest = { version = "0.11.14", default-features = false, features = ["json", "rustls-tls"] }
+#url = "2.3.1"
+#serde_json = "1.0.93"
