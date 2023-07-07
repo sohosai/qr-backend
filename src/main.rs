@@ -1,8 +1,8 @@
 use anyhow::{Context, Result};
+use qr_backend::app;
 use std::net::SocketAddr;
 use structopt::StructOpt;
 use tokio::runtime;
-use warp::Filter;
 
 #[derive(Debug, StructOpt)]
 #[structopt(name = "qr-api-server")]
@@ -28,8 +28,7 @@ fn main() -> Result<()> {
         .context("Failed to build the Tokio Runtime")?;
 
     // 指定したスレッド数でサーバーを実行する
-    // /pingにアクセスするとpingが返るだけの素朴なダミー値を入れている
-    runtime.block_on(warp::serve(warp::path("ping").map(|| String::from("ping"))).run(opt.bind));
+    runtime.block_on(app::app(opt.bind))?;
 
     Ok(())
 }
