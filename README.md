@@ -3,6 +3,9 @@
 ## 開発
 
 ### 環境構築
+
+#### Dockerを使う場合
+
 以下のソフトウェアが必要です。
 
 - Docker
@@ -11,6 +14,99 @@
 ```sh
 docker-compose up -d
 ```
+
+#### ローカルで構築する場合
+
+依存ソフトウェアは以下の通りです。
+
+- cargo
+- rustc
+- sqlx-cli
+- postgesql
+
+このソフトウェアはRustで書かれています。そのためRustのコンパイラであるrustcとパッケージマネージャ兼ビルドツールであるcargoをインストールする必要があります。
+rustupを使用した公式の方法に従うことでそれぞれインストールすることができます（[公式のダウンロードページ](https://www.rust-lang.org/ja/tools/install)）。
+
+このとき、`apt-get install`などでインストールしようとすると構築に失敗する事例が報告されており、**必ず**公式のツールを使うようにしてください。
+
+以下に例をあげますが、必ず公式を参照してください。
+
+```
+# Windows
+# インストーラをダウンロードして起動
+
+# Mac, Ubuntu
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --help
+```
+
+
+sqlx-cliはcargoを通じてインストールします。
+
+```
+cargo install sqlx-cli
+```
+
+でインストールができます。
+
+
+postgresqlは各々の環境に合わせたインストールを行ってください（[公式のダウンロードページ](https://www.postgresql.org/download/)）。
+
+以下に一例を示しますが、公式のページなどを参照するようにしてください。少なくともWindowsの場合はインストール後にpathの設定をする必要があります。
+
+```
+# Windows
+winget install postgresql -s winget
+
+# Ubuntu
+sudo apt-get update
+sudo apt-get -y install postgresql
+
+# Mac
+brew update
+brew install postgresql
+```
+
+### データベースの設定
+
+postgresqlのURLを`DATABASE_URL`環境変数に設定する必要があります。以下は一例です。
+
+```
+# PowerShell
+$Env:DATABASE_URL = "postgresql://localhost:5432/postgres?user=postgres&password=postgres"
+
+# bashなど
+DATABASE_URL="postgresql://localhost:5432/postgres?user=postgres&password=postgres"
+```
+
+sqlx-cliを使いデータベースの作成とマイグレーションの適用を行います。
+
+```
+sqlx db create
+sqlx migrate run
+```
+
+ちなみに、データベースの削除を行いたい場合は
+
+```
+sqlx db drop
+```
+
+でできます。マイグレーションの作成と動作確認の時に使えると思います。
+
+
+### SQLの検証について
+
+CIを回す際にはデータベースを構築せずに、データベース内のデータを保存したJSONファイルを元に検証を行います。
+そのJSONファイルは
+
+```
+cargo sqlx prepare
+```
+
+を行うことで生成することができます。
+データベースに変更を加えた場合には忘れずに実行してcommitしてください。
+
+詳しくは[Enable building in "offline" mode with `query!()`](https://github.com/launchbadge/sqlx/blob/master/sqlx-cli/README.md#enable-building-in-offline-mode-with-query)を参照してください。
 
 ### ブランチ名のルール
 - 新しい機能の追加: `features/#<issue-number>-<issue-summary>`
