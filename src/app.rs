@@ -6,8 +6,8 @@ use warp::Filter;
 /// サーバーの実体
 /// データベースを起動してエントリポイントに応じて関数を呼び出す
 pub async fn app(bind: SocketAddr) -> Result<()> {
-    let database_url = std::env::var("QR_DATABASE_URL")
-        .context("Environment variable not set: QR_DATABASE_URL")?;
+    let database_url =
+        std::env::var("DATABASE_URL").context("Environment variable not set: DATABASE_URL")?;
 
     // migrateファイルを適用
     let mut conn = PgConnection::connect(&database_url).await?;

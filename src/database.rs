@@ -7,23 +7,21 @@
 //! ```
 //! を行うことでインストールできる。
 //!
-//! PostgresのURLは`QR_DATABASE_URL`に設定する。
+//! PostgresのURLは`DATABASE_URL`に設定する。
 //!
 
 use anyhow::{Context, Result};
+
+/// 物品登録を行う関数を提供する
+pub mod insert_equipment;
 
 /// migrationファイルを適用する
 pub async fn migrate<'a, A>(conn: A) -> Result<()>
 where
     A: sqlx::Acquire<'a, Database = sqlx::Postgres>,
 {
-    sqlx::migrate!("src/database/migrations")
+    sqlx::migrate!("./migrations")
         .run(conn)
         .await
         .context("Failed to run migrations")
-}
-
-/// 備品登録をする
-pub async fn insert_equipment(_info: crate::Equipment) -> Result<()> {
-    todo!()
 }
