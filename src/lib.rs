@@ -1,7 +1,7 @@
 //! 資材管理システムqrのバックエンド
 //!
 
-use chrono::{serde::ts_milliseconds, Utc};
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -10,20 +10,6 @@ use uuid::Uuid;
 pub mod app;
 /// データベース周りのモジュール
 pub mod database;
-
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
-#[serde(transparent)]
-pub struct DateTime(#[serde(with = "ts_milliseconds")] pub chrono::DateTime<Utc>);
-
-impl DateTime {
-    pub fn from_utc(utc: chrono::DateTime<Utc>) -> Self {
-        DateTime(utc)
-    }
-
-    pub fn into_utc(self) -> chrono::DateTime<Utc> {
-        self.0
-    }
-}
 
 /// 備品情報のデータ。
 /// 必要な構成要素はこちらを参照<https://scrapbox.io/jsys/QR_2023_Design_Doc>
@@ -35,7 +21,7 @@ pub struct Equipment {
     /// 備品を識別する一意のID
     pub id: Uuid,
     /// 作成日時の記録
-    pub created_at: DateTime,
+    pub created_at: DateTime<Utc>,
     /// 貼られているQRコードに対応するID
     /// QRコードの更新でここの値が変わることがありうる
     pub qr_id: String,
@@ -61,9 +47,8 @@ pub struct Equipment {
 }
 
 /// QRコードに貼られている色
-#[derive(Debug, Clone, Serialize, Deserialize, sqlx::Type)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
-#[sqlx(type_name = "qr_color", rename_all = "snake_case")]
 pub enum QrColor {
     Red,
     Orange,
@@ -76,10 +61,47 @@ pub enum QrColor {
     Pink,
 }
 
+impl std::fmt::Display for QrColor {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            QrColor::Red => write!(f, "red")?,
+            QrColor::Orange => write!(f, "orange")?,
+            QrColor::Brown => write!(f, "brown")?,
+            QrColor::LightBlue => write!(f, "light_blue")?,
+            QrColor::Blue => write!(f, "blue")?,
+            QrColor::Green => write!(f, "green")?,
+            QrColor::Yellow => write!(f, "yellow")?,
+            QrColor::Purple => write!(f, "purple")?,
+            QrColor::Pink => write!(f, "pink")?,
+        };
+        Ok(())
+    }
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub struct ParseQrColorError;
+
+impl std::str::FromStr for QrColor {
+    type Err = ParseQrColorError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "red" => Ok(QrColor::Red),
+            "orange" => Ok(QrColor::Orange),
+            "brown" => Ok(QrColor::Brown),
+            "light_blue" => Ok(QrColor::LightBlue),
+            "blue" => Ok(QrColor::Blue),
+            "green" => Ok(QrColor::Green),
+            "yellow" => Ok(QrColor::Yellow),
+            "purple" => Ok(QrColor::Purple),
+            "pink" => Ok(QrColor::Pink),
+            _ => Err(ParseQrColorError),
+        }
+    }
+}
+
 /// 保管場所の教室等の情報
-#[derive(Debug, Clone, Serialize, Deserialize, sqlx::Type)]
-#[serde(rename_all = "snake_case")]
-#[sqlx(type_name = "stroge", rename_all = "snake_case")]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Stroge {
     /// 101という部屋
     Room101,
@@ -87,4 +109,31 @@ pub enum Stroge {
     Room102,
     /// 206という教室
     Room206,
+}
+
+impl std::fmt::Display for Stroge {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Stroge::Room101 => write!(f, "room101")?,
+            Stroge::Room102 => write!(f, "room102")?,
+            Stroge::Room206 => write!(f, "room206")?,
+        };
+        Ok(())
+    }
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub struct ParseStrogeError;
+
+impl std::str::FromStr for Stroge {
+    type Err = ParseStrogeError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "room101" => Ok(Stroge::Room101),
+            "room102" => Ok(Stroge::Room102),
+            "room206" => Ok(Stroge::Room206),
+            _ => Err(ParseStrogeError),
+        }
+    }
 }
