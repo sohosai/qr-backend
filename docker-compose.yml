@@ -5,9 +5,19 @@ services:
     image: rust:latest
     container_name: api-server
     working_dir: /workspace
-    command: cargo run -- --bind 0.0.0.0:3000
+    command: cargo run -- --bind 127.0.0.1:3000
     tty: true
     volumes:
       - ./:/workspace
     ports:
       - 3000:3000
+  db:
+    image: postgres:15
+    environment:
+      - DATABASE_URL: ${DATABASE_URL:?}
+    ports:
+      - ${POSTGRES_PORT:?}:5432
+    volumes:
+      - postgres-data-dev:/var/lib/postgresql/data
+volumes:
+  postgres-data-dev:
