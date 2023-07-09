@@ -47,6 +47,10 @@ pub struct Equipment {
 }
 
 /// QRコードに貼られている色
+/// 本来はqr_colorを`CREATE TYPE qr_color AS ENUM`などの形で定義したい。
+/// しかしsqlx v0.6以降できないらしく、DBにはtextで保存して変換をこちらで行うこととする。
+/// そのため、文字列に変換する`Display`トレイトと文字列から変換する`FromStr`トレイトを実装している。
+/// 参考：<https://github.com/launchbadge/sqlx/issues/1920>
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum QrColor {
@@ -101,6 +105,10 @@ impl std::str::FromStr for QrColor {
 }
 
 /// 保管場所の教室等の情報
+/// 本来はstorageを`CREATE TYPE storage AS ENUM`などの形で定義したい。
+/// しかしsqlx v0.6以降できないらしく、DBにはtextで保存して変換をこちらで行うこととする。
+/// そのため、文字列に変換する`Display`トレイトと文字列から変換する`FromStr`トレイトを実装している。
+/// 参考：<https://github.com/launchbadge/sqlx/issues/1920>
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Stroge {
     /// 101という部屋

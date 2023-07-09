@@ -20,6 +20,7 @@ pub async fn migrate<'a, A>(conn: A) -> Result<()>
 where
     A: sqlx::Acquire<'a, Database = sqlx::Postgres>,
 {
+    // migrationsフォルダにあるsqlファイルを全て実行する
     sqlx::migrate!("./migrations")
         .run(conn)
         .await
