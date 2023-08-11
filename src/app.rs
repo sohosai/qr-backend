@@ -1,9 +1,8 @@
-use anyhow::{Context, Result};
+use anyhow::Result;
 use axum::{
     routing::{get, post},
     Router,
 };
-use sqlx::postgres::PgPool;
 use std::net::SocketAddr;
 use std::sync::Arc;
 
@@ -13,11 +12,9 @@ pub mod equipment;
 /// サーバーの実体
 /// データベースを起動してエントリポイントに応じて関数を呼び出す
 pub async fn app(bind: SocketAddr) -> Result<()> {
-    let database_url =
-        std::env::var("DATABASE_URL").context("Environment variable not set: DATABASE_URL")?;
+    let conn = Arc::new(crate::database::create_pool().await?);
 
     // migrateファイルを適用
-    let conn = Arc::new(PgPool::connect(&database_url).await?);
     crate::database::migrate(&mut conn.acquire().await?).await?;
 
     // pathと関数の実体の紐づけ
