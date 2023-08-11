@@ -4,7 +4,7 @@ CREATE TABLE equipment (
     qr_id text NOT NULL,
     qr_color text NOT NULL,
     name text NOT NULL,
-    descripiton text,
+    description text,
     model_number text,
     storage text NOT NULL,
     usage text,

@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n    INSERT INTO equipment (\n        id,\n        created_at,\n        qr_id,\n        qr_color,\n        name,\n        description,\n        model_number,\n        storage,\n        usage,\n        usage_season,\n        note,\n        parent_id\n    ) VALUES ( $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12 )",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "99b0044202570995628a6b4d2ebb5336eb51c06d242eece58fff19f664afe8a7"
+}
