@@ -3,6 +3,7 @@ on: [push, pull_request]
 
 env:
   DATABASE_URL: postgresql://localhost:5432/postgres?user=postgres&password=postgres
+  SQLX_OFFLINE: "true"
 
 jobs:
   check:
@@ -10,14 +11,19 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
       - run: cargo check
   test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
       - run: |
           sudo apt-get install postgresql
+          cargo install sqlx-cli
+          sqlx db create
+          sqlx migrate run
           cargo test
   rustfmt:
     runs-on: ubuntu-latest
@@ -28,6 +34,7 @@ jobs:
           toolchain: stable
           components: rustfmt
           override: true
+      - uses: Swatinem/rust-cache@v2
       - run: cargo fmt --all -- --check
   clippy:
     runs-on: ubuntu-latest
@@ -38,4 +45,5 @@ jobs:
           toolchain: stable
           components: clippy
           override: true
+      - uses: Swatinem/rust-cache@v2
       - run: cargo clippy -- -D warnings
