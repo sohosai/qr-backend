@@ -15,14 +15,15 @@ jobs:
       - run: cargo check
   test:
     runs-on: ubuntu-latest
-    postgres:
-      image: postgres
-      env:
-        POSTGRES_PASSWORD: postgres
-        POSTGRES_USER: postgres
-        POSTGRES_DB: postgres
-      ports:
-        - 5432:5432
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
