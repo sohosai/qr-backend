@@ -11,6 +11,7 @@
 //!
 
 use anyhow::{Context, Result};
+use sqlx::{pool::Pool, postgres::PgPool, Postgres};
 
 /// 物品登録を行う関数を提供する
 pub mod insert_equipment;
@@ -25,4 +26,13 @@ where
         .run(conn)
         .await
         .context("Failed to run migrations")
+}
+
+/// poolを生成する
+pub async fn create_pool() -> Result<Pool<Postgres>> {
+    let database_url =
+        std::env::var("DATABASE_URL").context("Environment variable not set: DATABASE_URL")?;
+    let conn = PgPool::connect(&database_url).await?;
+
+    Ok(conn)
 }

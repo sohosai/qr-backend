@@ -30,7 +30,7 @@ pub struct Equipment {
     /// 物品名
     pub name: String,
     /// 説明
-    pub descripiton: Option<String>,
+    pub description: Option<String>,
     /// 型番
     pub model_number: Option<String>,
     /// 保管場所
