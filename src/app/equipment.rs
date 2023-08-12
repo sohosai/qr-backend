@@ -18,14 +18,14 @@ pub async fn insert_equipment(
 mod tests {
     use axum::{extract::Json, http::StatusCode};
     use serde_json::json;
+    use sqlx::{pool::Pool, Postgres};
     use std::sync::Arc;
 
     use crate::app::equipment::insert_equipment;
 
-    #[tokio::test]
-    async fn test_insert_equipment() {
-        let conn = Arc::new(crate::database::create_pool().await.unwrap());
-
+    #[sqlx::test]
+    async fn test_insert_equipment(pool: Pool<Postgres>) {
+        let conn = Arc::new(pool);
         let status_code = insert_equipment(
             Json(
                 serde_json::from_value(json!({
