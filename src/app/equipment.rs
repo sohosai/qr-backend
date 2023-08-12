@@ -23,7 +23,7 @@ mod tests {
 
     use crate::app::equipment::insert_equipment;
 
-    #[sqlx::test]
+    #[sqlx::test(migrations = "./migrations")]
     async fn test_insert_equipment(pool: Pool<Postgres>) {
         let conn = Arc::new(pool);
         let status_code = insert_equipment(
