@@ -145,3 +145,63 @@ impl std::str::FromStr for Stroge {
         }
     }
 }
+
+/// 貸し出した物品を持っていく地点などの情報
+/// DBに保管して参照できるようにする
+#[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
+pub struct Spot {
+    /// 人が聞いて認識できるような場所につけられた名前。
+    /// 入力で使われることを想定。
+    pub name: String,
+    /// 第三エリアなどの大まかな範囲を与える。
+    pub area: Area,
+    /// 建物の名称。
+    /// 建物ではないところで使う可能性もあるのでOption型。
+    /// enumで新たにbuilding型を定義するべきかは迷い中。
+    pub building: Option<String>,
+    /// 階数。
+    /// 建物ではないところで使う可能性もあるのでOption型。
+    pub floor: Option<u8>,
+    /// 部屋の番号や名前など。
+    /// 建物ではないところで使う可能性もあるのでOption型。
+    pub room: Option<String>,
+}
+
+/// 大まかな範囲を与える区分。
+/// 学内の使われる範囲を細かすぎず網羅的にカバーできるべき。
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum Area {
+    /// 第一エリア
+    Area1,
+    /// 第二エリア
+    Area2,
+    /// 第三エリア
+    Area3,
+}
+
+impl std::fmt::Display for Area {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Area::Area1 => write!(f, "area1")?,
+            Area::Area2 => write!(f, "area2")?,
+            Area::Area3 => write!(f, "area3")?,
+        };
+        Ok(())
+    }
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub struct ParseAreaError;
+
+impl std::str::FromStr for Area {
+    type Err = ParseAreaError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "area1" => Ok(Area::Area1),
+            "area2" => Ok(Area::Area2),
+            "area3" => Ok(Area::Area3),
+            _ => Err(ParseAreaError),
+        }
+    }
+}

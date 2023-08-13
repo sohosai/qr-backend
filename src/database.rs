@@ -15,6 +15,8 @@ use sqlx::{pool::Pool, postgres::PgPool, Postgres};
 
 /// 物品登録を行う関数を提供する
 pub mod insert_equipment;
+/// 地点登録を行う関数を提供する
+pub mod insert_spot;
 
 /// migrationファイルを適用する
 pub async fn migrate<'a, A>(conn: A) -> Result<()>
