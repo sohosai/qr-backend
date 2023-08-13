@@ -13,6 +13,8 @@
 use anyhow::{Context, Result};
 use sqlx::{pool::Pool, postgres::PgPool, Postgres};
 
+/// 物品削除を行う関数を提供する
+pub mod delete_equipment;
 /// 物品登録を行う関数を提供する
 pub mod insert_equipment;
 /// 地点登録を行う関数を提供する
