@@ -1,6 +1,7 @@
 use axum::{extract::Json, http::StatusCode};
 use sqlx::{pool::Pool, postgres::Postgres};
 use std::sync::Arc;
+use uuid::Uuid;
 
 /// 備品情報の登録を行うエンドポイント
 /// - https://github.com/sohosai/qr-backend/issues/11
@@ -11,6 +12,18 @@ pub async fn insert_equipment(
     match crate::database::insert_equipment::insert_equipment(&*conn, equipment).await {
         Ok(()) => StatusCode::ACCEPTED,
         _ => StatusCode::BAD_REQUEST,
+    }
+}
+
+pub async fn delete_equipment(uuid: Option<Uuid>, conn: Arc<Pool<Postgres>>) -> StatusCode {
+    match uuid {
+        Some(uuid) => {
+            match crate::database::delete_equipment::delete_equipment(&*conn, uuid).await {
+                Ok(()) => StatusCode::ACCEPTED,
+                _ => StatusCode::BAD_REQUEST,
+            }
+        }
+        None => StatusCode::BAD_REQUEST,
     }
 }
 
