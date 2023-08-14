@@ -47,10 +47,11 @@ mod tests {
         assert!(result.is_some());
 
         delete_equipment(&pool, uuid).await.unwrap();
-        let result = sqlx::query_as!(Equipment, "SELECT * FROM equipment WHERE id = $1", uuid)
-            .fetch_optional(&pool)
-            .await
-            .unwrap();
+        let result: Option<Equipment> =
+            sqlx::query_as!(Equipment, "SELECT * FROM equipment WHERE id = $1", uuid)
+                .fetch_optional(&pool)
+                .await
+                .unwrap();
         assert!(result.is_none());
     }
 }
