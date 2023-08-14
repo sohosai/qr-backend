@@ -35,7 +35,7 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
             delete({
                 let conn = Arc::clone(&conn);
                 move |query: Query<HashMap<String, String>>| {
-                    let uuid_opt = query.0.get("id").map(|s| Uuid::parse_str(s).ok()).flatten();
+                    let uuid_opt = query.0.get("id").and_then(|s| Uuid::parse_str(s).ok());
                     fixtures::delete_fixtures(uuid_opt, conn)
                 }
             }),
