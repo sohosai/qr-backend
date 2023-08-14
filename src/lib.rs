@@ -1,6 +1,8 @@
 //! 資材管理システムqrのバックエンド
 //!
 
+use core::panic;
+
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -82,24 +84,19 @@ impl std::fmt::Display for QrColor {
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
-pub struct ParseQrColorError;
-
-impl std::str::FromStr for QrColor {
-    type Err = ParseQrColorError;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "red" => Ok(QrColor::Red),
-            "orange" => Ok(QrColor::Orange),
-            "brown" => Ok(QrColor::Brown),
-            "light_blue" => Ok(QrColor::LightBlue),
-            "blue" => Ok(QrColor::Blue),
-            "green" => Ok(QrColor::Green),
-            "yellow" => Ok(QrColor::Yellow),
-            "purple" => Ok(QrColor::Purple),
-            "pink" => Ok(QrColor::Pink),
-            _ => Err(ParseQrColorError),
+impl From<std::string::String> for QrColor {
+    fn from(item: String) -> Self {
+        match item.as_str() {
+            "red" => QrColor::Red,
+            "orange" => QrColor::Orange,
+            "brown" => QrColor::Brown,
+            "light_blue" => QrColor::LightBlue,
+            "blue" => QrColor::Blue,
+            "green" => QrColor::Green,
+            "yellow" => QrColor::Yellow,
+            "purple" => QrColor::Purple,
+            "pink" => QrColor::Pink,
+            _ => panic!(),
         }
     }
 }
@@ -130,18 +127,13 @@ impl std::fmt::Display for Stroge {
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
-pub struct ParseStrogeError;
-
-impl std::str::FromStr for Stroge {
-    type Err = ParseStrogeError;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "room101" => Ok(Stroge::Room101),
-            "room102" => Ok(Stroge::Room102),
-            "room206" => Ok(Stroge::Room206),
-            _ => Err(ParseStrogeError),
+impl From<std::string::String> for Stroge {
+    fn from(item: String) -> Self {
+        match item.as_str() {
+            "room101" => Stroge::Room101,
+            "room102" => Stroge::Room102,
+            "room206" => Stroge::Room206,
+            _ => panic!(),
         }
     }
 }
