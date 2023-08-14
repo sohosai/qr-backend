@@ -1,7 +1,7 @@
 use anyhow::Result;
 use axum::{
     extract::Query,
-    routing::{get, post},
+    routing::{delete, get, post},
     Router,
 };
 use std::collections::HashMap;
@@ -32,16 +32,10 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
         )
         .route(
             "/delete_equipment",
-            get({
+            delete({
                 let conn = Arc::clone(&conn);
                 move |query: Query<HashMap<String, String>>| {
-                    let uuid_opt = match query.0.get("id") {
-                        Some(uuid_str) => match Uuid::parse_str(uuid_str) {
-                            Ok(uuid) => Some(uuid),
-                            Err(_) => None,
-                        },
-                        None => None,
-                    };
+                    let uuid_opt = query.0.get("id").map(|s| Uuid::parse_str(s).ok()).flatten();
                     equipment::delete_equipment(uuid_opt, conn)
                 }
             }),
