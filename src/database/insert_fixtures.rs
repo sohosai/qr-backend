@@ -1,11 +1,11 @@
 use anyhow::{Context, Result};
 
 /// 備品登録をする
-pub async fn insert_equipment<'a, E>(conn: E, info: crate::Equipment) -> Result<()>
+pub async fn insert_fixtures<'a, E>(conn: E, info: crate::Fixtures) -> Result<()>
 where
     E: sqlx::Executor<'a, Database = sqlx::Postgres>,
 {
-    let crate::Equipment {
+    let crate::Fixtures {
         id,
         created_at,
         qr_id,
@@ -22,7 +22,7 @@ where
 
     sqlx::query!(
         r#"
-    INSERT INTO equipment (
+    INSERT INTO fixtures (
         id,
         created_at,
         qr_id,
@@ -51,7 +51,7 @@ where
     )
     .execute(conn)
     .await
-    .context("Failed to insert to equipment")?;
+    .context("Failed to insert to fixtures")?;
 
     Ok(())
 }

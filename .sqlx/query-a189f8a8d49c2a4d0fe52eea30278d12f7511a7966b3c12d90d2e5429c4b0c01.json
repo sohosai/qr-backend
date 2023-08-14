@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT * FROM equipment WHERE id = $1",
+  "query": "SELECT * FROM fixtures WHERE id = $1",
   "describe": {
     "columns": [
       {

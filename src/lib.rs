@@ -19,7 +19,7 @@ pub mod database;
 /// 具体的なデータはこれ:
 /// <https://docs.google.com/spreadsheets/d/1PttDAxejyimvIQp-RKmAnYzVVEUaBb611Zgp4bUiO0I/edit#gid=0>
 #[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
-pub struct Equipment {
+pub struct Fixtures {
     /// 備品を識別する一意のID
     pub id: Uuid,
     /// 作成日時の記録

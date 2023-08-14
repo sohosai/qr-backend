@@ -5,24 +5,22 @@ use uuid::Uuid;
 
 /// 備品情報の登録を行うエンドポイント
 /// - https://github.com/sohosai/qr-backend/issues/11
-pub async fn insert_equipment(
-    Json(equipment): Json<crate::Equipment>,
+pub async fn insert_fixtures(
+    Json(fixtures): Json<crate::Fixtures>,
     conn: Arc<Pool<Postgres>>,
 ) -> StatusCode {
-    match crate::database::insert_equipment::insert_equipment(&*conn, equipment).await {
+    match crate::database::insert_fixtures::insert_fixtures(&*conn, fixtures).await {
         Ok(()) => StatusCode::ACCEPTED,
         _ => StatusCode::BAD_REQUEST,
     }
 }
 
-pub async fn delete_equipment(uuid: Option<Uuid>, conn: Arc<Pool<Postgres>>) -> StatusCode {
+pub async fn delete_fixtures(uuid: Option<Uuid>, conn: Arc<Pool<Postgres>>) -> StatusCode {
     match uuid {
-        Some(uuid) => {
-            match crate::database::delete_equipment::delete_equipment(&*conn, uuid).await {
-                Ok(()) => StatusCode::ACCEPTED,
-                _ => StatusCode::BAD_REQUEST,
-            }
-        }
+        Some(uuid) => match crate::database::delete_fixtures::delete_fixtures(&*conn, uuid).await {
+            Ok(()) => StatusCode::ACCEPTED,
+            _ => StatusCode::BAD_REQUEST,
+        },
         None => StatusCode::BAD_REQUEST,
     }
 }
@@ -34,12 +32,12 @@ mod tests {
     use sqlx::{pool::Pool, Postgres};
     use std::sync::Arc;
 
-    use crate::app::equipment::insert_equipment;
+    use crate::app::fixtures::insert_fixtures;
 
     #[sqlx::test(migrations = "./migrations")]
-    async fn test_insert_equipment(pool: Pool<Postgres>) {
+    async fn test_insert_fixtures(pool: Pool<Postgres>) {
         let conn = Arc::new(pool);
-        let status_code = insert_equipment(
+        let status_code = insert_fixtures(
             Json(
                 serde_json::from_value(json!({
                   "id": "550e8400-e29b-41d4-a716-446655440000",

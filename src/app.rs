@@ -10,7 +10,7 @@ use std::sync::Arc;
 use uuid::Uuid;
 
 /// 物品情報の登録を行うエンドポイントの定義
-pub mod equipment;
+pub mod fixtures;
 
 /// サーバーの実体
 /// データベースを起動してエントリポイントに応じて関数を呼び出す
@@ -24,19 +24,19 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
     let app = Router::new()
         .route("/ping", get(ping))
         .route(
-            "/insert_equipment",
+            "/insert_fixtures",
             post({
                 let conn = Arc::clone(&conn);
-                move |body| equipment::insert_equipment(body, conn)
+                move |body| fixtures::insert_fixtures(body, conn)
             }),
         )
         .route(
-            "/delete_equipment",
+            "/delete_fixtures",
             delete({
                 let conn = Arc::clone(&conn);
                 move |query: Query<HashMap<String, String>>| {
                     let uuid_opt = query.0.get("id").map(|s| Uuid::parse_str(s).ok()).flatten();
-                    equipment::delete_equipment(uuid_opt, conn)
+                    fixtures::delete_fixtures(uuid_opt, conn)
                 }
             }),
         );
