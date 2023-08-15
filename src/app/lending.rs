@@ -1,6 +1,8 @@
 use axum::{extract::Json, http::StatusCode};
+use chrono::{DateTime, Utc};
 use sqlx::{pool::Pool, postgres::Postgres};
 use std::sync::Arc;
+use uuid::Uuid;
 
 /// 備品情報の登録を行うエンドポイント
 /// - https://github.com/sohosai/qr-backend/issues/11
@@ -11,6 +13,23 @@ pub async fn insert_lending(
     match crate::database::insert_lending::insert_lending(&*conn, lending).await {
         Ok(()) => StatusCode::ACCEPTED,
         _ => StatusCode::BAD_REQUEST,
+    }
+}
+
+pub async fn returned_lending(
+    id: Option<Uuid>,
+    returned_at: DateTime<Utc>,
+    conn: Arc<Pool<Postgres>>,
+) -> StatusCode {
+    match id {
+        Some(id) => {
+            match crate::database::returned_lending::returned_lending(&*conn, id, returned_at).await
+            {
+                Ok(()) => StatusCode::ACCEPTED,
+                _ => StatusCode::BAD_REQUEST,
+            }
+        }
+        None => StatusCode::BAD_REQUEST,
     }
 }
 

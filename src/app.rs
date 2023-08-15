@@ -4,6 +4,7 @@ use axum::{
     routing::{delete, get, post},
     Router,
 };
+use chrono::Utc;
 use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::sync::Arc;
@@ -49,6 +50,17 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
             post({
                 let conn = Arc::clone(&conn);
                 move |body| lending::insert_lending(body, conn)
+            }),
+        )
+        .route(
+            "/returned_lending",
+            post({
+                let conn = Arc::clone(&conn);
+                move |query: Query<HashMap<String, String>>| {
+                    let uuid_opt = query.0.get("id").and_then(|s| Uuid::parse_str(s).ok());
+                    let now = Utc::now();
+                    lending::returned_lending(uuid_opt, now, conn)
+                }
             }),
         )
         .route(
