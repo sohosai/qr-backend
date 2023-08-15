@@ -214,7 +214,7 @@ pub struct Lending {
     /// 借りた人の名前
     pub borrower_name: String,
     /// 借りた人の学籍番号
-    pub borrower_number: usize,
+    pub borrower_number: i32,
     /// 借りた人の所属組織
     pub borrower_org: Option<String>,
 }
