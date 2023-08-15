@@ -27,6 +27,8 @@ pub mod insert_lending;
 pub mod insert_spot;
 /// 返却処理を行う関数を提供する
 pub mod returned_lending;
+/// 貸出情報の更新を行う関数を提供する
+pub mod update_lending;
 /// 地点情報の変更を行う関数を提供する
 pub mod update_spot;
 
