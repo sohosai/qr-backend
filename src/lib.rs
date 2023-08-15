@@ -192,3 +192,27 @@ impl From<std::string::String> for Area {
         }
     }
 }
+
+/// 貸し出した物品を持っていく地点などの情報
+/// DBに保管して参照できるようにする
+#[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
+pub struct Lending {
+    /// 貸し出しに振る一意のID
+    pub id: Uuid,
+    /// 貸し出した物品のID
+    pub fixtures_id: Uuid,
+    /// 貸し出して持っていく地点の名称
+    /// Spot型のnameフィールドと一致する必要がある
+    pub spot_name: String,
+    /// 貸し出し日時の記録
+    pub lending_at: DateTime<Utc>,
+    /// 返却日時の記録
+    /// これの値で貸し出し中かどうかも判定できる
+    pub returned_at: Option<DateTime<Utc>>,
+    /// 借りた人の名前
+    pub borrower_name: String,
+    /// 借りた人の学籍番号
+    pub borrower_number: usize,
+    /// 借りた人の所属組織
+    pub borrower_org: Option<String>,
+}
