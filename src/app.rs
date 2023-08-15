@@ -11,6 +11,8 @@ use uuid::Uuid;
 
 /// 物品情報の登録を行うエンドポイントの定義
 pub mod fixtures;
+/// 貸出情報の管理を行うエンドポイントの定義
+pub mod lending;
 
 /// サーバーの実体
 /// データベースを起動してエントリポイントに応じて関数を呼び出す
@@ -38,6 +40,13 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
                     let uuid_opt = query.0.get("id").and_then(|s| Uuid::parse_str(s).ok());
                     fixtures::delete_fixtures(uuid_opt, conn)
                 }
+            }),
+        )
+        .route(
+            "/insert_lending",
+            post({
+                let conn = Arc::clone(&conn);
+                move |body| lending::insert_lending(body, conn)
             }),
         );
 
