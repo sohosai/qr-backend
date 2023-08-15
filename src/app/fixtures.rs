@@ -46,7 +46,7 @@ mod tests {
                   "qr_color":"red",
                   "name":"テスト物品",
                   "description":"テスト説明",
-                  "storage": "Room101",
+                  "storage": "room101",
                   "usage": "無い",
                   "note": "DBを確認",
                   "parent_id": "null"

@@ -13,6 +13,8 @@ use uuid::Uuid;
 pub mod fixtures;
 /// 貸出情報の管理を行うエンドポイントの定義
 pub mod lending;
+/// 場所の管理を行うエンドポイントの定義
+pub mod spot;
 
 /// サーバーの実体
 /// データベースを起動してエントリポイントに応じて関数を呼び出す

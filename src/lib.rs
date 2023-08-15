@@ -107,6 +107,7 @@ impl From<std::string::String> for QrColor {
 /// そのため、文字列に変換する`Display`トレイトと文字列から変換する`FromStr`トレイトを実装している。
 /// 参考：<https://github.com/launchbadge/sqlx/issues/1920>
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum Stroge {
     /// 101という部屋
     Room101,
@@ -162,6 +163,7 @@ pub struct Spot {
 /// 大まかな範囲を与える区分。
 /// 学内の使われる範囲を細かすぎず網羅的にカバーできるべき。
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum Area {
     /// 第一エリア
     Area1,

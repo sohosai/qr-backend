@@ -32,14 +32,14 @@ mod tests {
         let status_code = insert_lending(
             Json(
                 serde_json::from_value(json!({
-                "id": id,
-                "fixtures_id": fixtures_id,
-                "spot_name": "test",
-                "lending_at": "2023-08-07 15:56:35 UTC",
-                "borrower_name": "test",
-                "borrower_number": 202200000,
-                "borrower_org": "jsys"
-                      }))
+                    "id": id,
+                    "fixtures_id": fixtures_id,
+                    "spot_name": "test",
+                    "lending_at": "2023-08-07 15:56:35 UTC",
+                    "borrower_name": "test",
+                    "borrower_number": 202200000,
+                    "borrower_org": "jsys"
+                }))
                 .unwrap(),
             ),
             conn,
