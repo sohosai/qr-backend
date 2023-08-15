@@ -69,6 +69,13 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
                 let conn = Arc::clone(&conn);
                 move |body| spot::insert_spot(body, conn)
             }),
+        )
+        .route(
+            "/update_spot",
+            post({
+                let conn = Arc::clone(&conn);
+                move |body| spot::update_spot(body, conn)
+            }),
         );
 
     // サーバーの実行

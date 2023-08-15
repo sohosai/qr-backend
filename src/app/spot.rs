@@ -10,6 +10,14 @@ pub async fn insert_spot(Json(spot): Json<crate::Spot>, conn: Arc<Pool<Postgres>
     }
 }
 
+/// 地点情報の更新を行うエンドポイント
+pub async fn update_spot(Json(spot): Json<crate::Spot>, conn: Arc<Pool<Postgres>>) -> StatusCode {
+    match crate::database::update_spot::update_spot(&*conn, spot).await {
+        Ok(()) => StatusCode::ACCEPTED,
+        _ => StatusCode::BAD_REQUEST,
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use axum::{extract::Json, http::StatusCode};
