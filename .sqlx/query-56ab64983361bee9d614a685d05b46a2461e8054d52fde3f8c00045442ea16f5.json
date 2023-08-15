@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n    UPDATE lending SET returned_at=$1 WHERE id=$2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Timestamptz",
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "56ab64983361bee9d614a685d05b46a2461e8054d52fde3f8c00045442ea16f5"
+}

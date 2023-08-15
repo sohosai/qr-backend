@@ -23,6 +23,8 @@ pub mod insert_fixtures;
 pub mod insert_lending;
 /// 地点登録を行う関数を提供する
 pub mod insert_spot;
+/// 返却処理を行う関数を提供する
+pub mod returned_lending;
 
 /// migrationファイルを適用する
 pub async fn migrate<'a, A>(conn: A) -> Result<()>
