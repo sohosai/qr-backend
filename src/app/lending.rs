@@ -1,3 +1,4 @@
+use crate::Lending;
 use axum::{extract::Json, http::StatusCode};
 use chrono::{DateTime, Utc};
 use sqlx::{pool::Pool, postgres::Postgres};
@@ -6,10 +7,7 @@ use uuid::Uuid;
 
 /// 備品情報の登録を行うエンドポイント
 /// - https://github.com/sohosai/qr-backend/issues/11
-pub async fn insert_lending(
-    Json(lending): Json<crate::Lending>,
-    conn: Arc<Pool<Postgres>>,
-) -> StatusCode {
+pub async fn insert_lending(Json(lending): Json<Lending>, conn: Arc<Pool<Postgres>>) -> StatusCode {
     match crate::database::insert_lending::insert_lending(&*conn, lending).await {
         Ok(()) => StatusCode::ACCEPTED,
         _ => StatusCode::BAD_REQUEST,
@@ -30,6 +28,13 @@ pub async fn returned_lending(
             }
         }
         None => StatusCode::BAD_REQUEST,
+    }
+}
+
+pub async fn get_lending_list(conn: Arc<Pool<Postgres>>) -> Json<Option<Vec<Lending>>> {
+    match crate::database::get_lending_list::get_lending_list(&*conn).await {
+        Ok(v) => axum::Json(Some(v)),
+        _ => axum::Json(None),
     }
 }
 
