@@ -38,6 +38,13 @@ pub async fn get_lending_list(conn: Arc<Pool<Postgres>>) -> Json<Option<Vec<Lend
     }
 }
 
+pub async fn update_lending(Json(lending): Json<Lending>, conn: Arc<Pool<Postgres>>) -> StatusCode {
+    match crate::database::update_lending::update_lending(&*conn, lending).await {
+        Ok(()) => StatusCode::ACCEPTED,
+        _ => StatusCode::BAD_REQUEST,
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use axum::{extract::Json, http::StatusCode};
