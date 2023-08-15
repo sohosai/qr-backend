@@ -1,4 +1,4 @@
-CREATE TABLE equipment (
+CREATE TABLE fixtures (
     id uuid PRIMARY KEY,
     created_at timestamptz NOT NULL,
     qr_id text NOT NULL,

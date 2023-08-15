@@ -30,7 +30,7 @@ where
     )
     .execute(conn)
     .await
-    .context("Failed to insert to equipment")?;
+    .context("Failed to insert to fixtures")?;
 
     Ok(())
 }

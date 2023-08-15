@@ -19,7 +19,7 @@ pub mod database;
 /// 具体的なデータはこれ:
 /// <https://docs.google.com/spreadsheets/d/1PttDAxejyimvIQp-RKmAnYzVVEUaBb611Zgp4bUiO0I/edit#gid=0>
 #[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
-pub struct Equipment {
+pub struct Fixtures {
     /// 備品を識別する一意のID
     pub id: Uuid,
     /// 作成日時の記録
@@ -182,18 +182,13 @@ impl std::fmt::Display for Area {
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
-pub struct ParseAreaError;
-
-impl std::str::FromStr for Area {
-    type Err = ParseAreaError;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "area1" => Ok(Area::Area1),
-            "area2" => Ok(Area::Area2),
-            "area3" => Ok(Area::Area3),
-            _ => Err(ParseAreaError),
+impl From<std::string::String> for Area {
+    fn from(item: String) -> Self {
+        match item.as_str() {
+            "area1" => Area::Area1,
+            "area2" => Area::Area2,
+            "area3" => Area::Area3,
+            _ => panic!(),
         }
     }
 }
