@@ -1,0 +1,18 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE spot SET area=$2, building=$3, floor=$4, room=$5 WHERE name=$1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Text",
+        "Int4",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "d2f7a086175c55e12aa9f112d92d89173cfe4418804bc0f4e7e1da41bbe540c1"
+}
