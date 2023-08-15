@@ -53,6 +53,13 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
             }),
         )
         .route(
+            "/update_lending",
+            post({
+                let conn = Arc::clone(&conn);
+                move |body| lending::update_lending(body, conn)
+            }),
+        )
+        .route(
             "/returned_lending",
             post({
                 let conn = Arc::clone(&conn);
