@@ -64,6 +64,13 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
             }),
         )
         .route(
+            "/get_lending_list",
+            get({
+                let conn = Arc::clone(&conn);
+                move || lending::get_lending_list(conn)
+            }),
+        )
+        .route(
             "/insert_spot",
             post({
                 let conn = Arc::clone(&conn);
