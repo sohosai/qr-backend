@@ -16,7 +16,7 @@ where
 #[cfg(test)]
 mod tests {
     use crate::database::delete_fixtures::delete_fixtures;
-    use crate::database::get_one_fixtures::get_one_fixtures;
+    use crate::database::get_one_fixtures::{get_one_fixtures, IdType::*};
     use crate::database::insert_fixtures::insert_fixtures;
     use crate::Fixtures;
     use sqlx::{pool::Pool, Postgres};
@@ -40,11 +40,11 @@ mod tests {
         .unwrap();
 
         insert_fixtures(&pool, info).await.unwrap();
-        let result = get_one_fixtures(&pool, uuid).await.unwrap();
+        let result = get_one_fixtures(&pool, FixturesId(uuid)).await.unwrap();
         assert!(result.is_some());
 
         delete_fixtures(&pool, uuid).await.unwrap();
-        let result = get_one_fixtures(&pool, uuid).await.unwrap();
+        let result = get_one_fixtures(&pool, FixturesId(uuid)).await.unwrap();
         assert!(result.is_none());
     }
 }

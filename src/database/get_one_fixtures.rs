@@ -1,22 +1,43 @@
 use crate::Fixtures;
 use anyhow::{Context, Result};
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-pub async fn get_one_fixtures<'a, E>(conn: E, uuid: Uuid) -> Result<Option<Fixtures>>
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum IdType {
+    FixturesId(Uuid),
+    QrId(String),
+}
+
+pub async fn get_one_fixtures<'a, E>(conn: E, id: IdType) -> Result<Option<Fixtures>>
 where
     E: sqlx::Executor<'a, Database = sqlx::Postgres>,
 {
-    let fixtures_opt = sqlx::query_as!(Fixtures, "SELECT * FROM fixtures WHERE id = $1", uuid)
-        .fetch_optional(conn)
-        .await
-        .context("Failed to get fixtures")?;
+    match id {
+        IdType::FixturesId(id) => {
+            let fixtures_opt =
+                sqlx::query_as!(Fixtures, "SELECT * FROM fixtures WHERE id = $1", id)
+                    .fetch_optional(conn)
+                    .await
+                    .context("Failed to get fixtures")?;
 
-    Ok(fixtures_opt)
+            Ok(fixtures_opt)
+        }
+        IdType::QrId(id) => {
+            let fixtures_opt =
+                sqlx::query_as!(Fixtures, "SELECT * FROM fixtures WHERE qr_id = $1", id)
+                    .fetch_optional(conn)
+                    .await
+                    .context("Failed to get fixtures")?;
+
+            Ok(fixtures_opt)
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::database::get_one_fixtures::get_one_fixtures;
+    use crate::database::get_one_fixtures::{get_one_fixtures, IdType::*};
     use crate::database::insert_fixtures::insert_fixtures;
     use crate::Fixtures;
     use sqlx::{pool::Pool, Postgres};
@@ -41,10 +62,16 @@ mod tests {
         .unwrap();
 
         insert_fixtures(&pool, info).await.unwrap();
-        let result: Option<Fixtures> = get_one_fixtures(&pool, uuid).await.unwrap();
+        let result: Option<Fixtures> = get_one_fixtures(&pool, FixturesId(uuid)).await.unwrap();
+        assert!(result.is_some());
+        let result: Option<Fixtures> = get_one_fixtures(&pool, QrId("test".to_string()))
+            .await
+            .unwrap();
         assert!(result.is_some());
 
-        let result: Option<Fixtures> = get_one_fixtures(&pool, dummy_uuid).await.unwrap();
+        let result: Option<Fixtures> = get_one_fixtures(&pool, FixturesId(dummy_uuid))
+            .await
+            .unwrap();
         assert!(result.is_none());
     }
 }
