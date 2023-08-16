@@ -1,12 +1,15 @@
+use crate::database::get_one_fixtures::{get_one_fixtures, IdType::*};
+use crate::Fixtures;
 use axum::{extract::Json, http::StatusCode};
 use sqlx::{pool::Pool, postgres::Postgres};
+use std::collections::HashMap;
 use std::sync::Arc;
 use uuid::Uuid;
 
 /// 備品情報の登録を行うエンドポイント
 /// - https://github.com/sohosai/qr-backend/issues/11
 pub async fn insert_fixtures(
-    Json(fixtures): Json<crate::Fixtures>,
+    Json(fixtures): Json<Fixtures>,
     conn: Arc<Pool<Postgres>>,
 ) -> StatusCode {
     match crate::database::insert_fixtures::insert_fixtures(&*conn, fixtures).await {
@@ -16,7 +19,7 @@ pub async fn insert_fixtures(
 }
 
 pub async fn update_fixtures(
-    Json(fixtures): Json<crate::Fixtures>,
+    Json(fixtures): Json<Fixtures>,
     conn: Arc<Pool<Postgres>>,
 ) -> StatusCode {
     match crate::database::update_fixtures::update_fixtures(&*conn, fixtures).await {
@@ -32,6 +35,30 @@ pub async fn delete_fixtures(uuid: Option<Uuid>, conn: Arc<Pool<Postgres>>) -> S
             _ => StatusCode::BAD_REQUEST,
         },
         None => StatusCode::BAD_REQUEST,
+    }
+}
+
+pub async fn get_fixtures(
+    query: HashMap<String, String>,
+    conn: Arc<Pool<Postgres>>,
+) -> Json<Option<Fixtures>> {
+    match (query.get("id"), query.get("qr_id")) {
+        (Some(id), _) => {
+            let uuid_opt = Uuid::parse_str(id).ok();
+            if let Some(uuid) = uuid_opt {
+                match get_one_fixtures(&*conn, FixturesId(uuid)).await {
+                    Ok(f) => Json(f),
+                    Err(_) => Json(None),
+                }
+            } else {
+                Json(None)
+            }
+        }
+        (_, Some(qr_id)) => match get_one_fixtures(&*conn, QrId(qr_id.clone())).await {
+            Ok(f) => Json(f),
+            Err(_) => Json(None),
+        },
+        _ => Json(None),
     }
 }
 
