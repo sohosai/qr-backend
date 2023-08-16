@@ -10,6 +10,8 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 use uuid::Uuid;
 
+/// コンテナの管理を行うエンドポイントの定義
+pub mod container;
 /// 物品情報の登録を行うエンドポイントの定義
 pub mod fixtures;
 /// 貸出情報の管理を行うエンドポイントの定義
@@ -96,6 +98,13 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
             post({
                 let conn = Arc::clone(&conn);
                 move |body| spot::update_spot(body, conn)
+            }),
+        )
+        .route(
+            "/insert_container",
+            post({
+                let conn = Arc::clone(&conn);
+                move |body| container::insert_container(body, conn)
             }),
         );
 
