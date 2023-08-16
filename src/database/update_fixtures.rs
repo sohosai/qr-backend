@@ -57,7 +57,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::database::get_one_fixtures::get_one_fixtures;
+    use crate::database::get_one_fixtures::{get_one_fixtures, IdType};
     use crate::database::insert_fixtures::insert_fixtures;
     use crate::database::update_fixtures::update_fixtures;
     use crate::Fixtures;
@@ -98,7 +98,10 @@ mod tests {
 
         update_fixtures(&pool, new_info).await.unwrap();
 
-        let result = get_one_fixtures(&pool, uuid).await.unwrap().unwrap();
+        let result = get_one_fixtures(&pool, IdType::FixturesId(uuid))
+            .await
+            .unwrap()
+            .unwrap();
         assert_eq!(result.qr_id, "test2".to_string())
     }
 }
