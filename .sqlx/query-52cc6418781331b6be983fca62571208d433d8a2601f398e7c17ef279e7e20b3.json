@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n    UPDATE fixtures SET\n        created_at=$2,\n        qr_id=$3,\n        qr_color=$4,\n        name=$5,\n        description=$6,\n        model_number=$7,\n        storage=$8,\n        usage=$9,\n        usage_season=$10,\n        note=$11,\n        parent_id=$12\n    WHERE id=$1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "52cc6418781331b6be983fca62571208d433d8a2601f398e7c17ef279e7e20b3"
+}
