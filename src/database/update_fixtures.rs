@@ -61,7 +61,6 @@ mod tests {
     use crate::database::insert_fixtures::insert_fixtures;
     use crate::database::update_fixtures::update_fixtures;
     use crate::Fixtures;
-    use crate::Stroge;
     use sqlx::{pool::Pool, Postgres};
     use uuid::uuid;
     #[sqlx::test(migrations = "./migrations")]
