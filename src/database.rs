@@ -19,6 +19,8 @@ pub mod delete_fixtures;
 pub mod get_lending_list;
 /// 物品の取得を行う関数を提供する
 pub mod get_one_fixtures;
+/// コンテナの登録を行う関数を提供する
+pub mod insert_container;
 /// 物品登録を行う関数を提供する
 pub mod insert_fixtures;
 /// 貸出情報の登録を行う関数を提供する
