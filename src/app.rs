@@ -36,6 +36,13 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
             }),
         )
         .route(
+            "/update_fixtures",
+            post({
+                let conn = Arc::clone(&conn);
+                move |body| fixtures::update_fixtures(body, conn)
+            }),
+        )
+        .route(
             "/delete_fixtures",
             delete({
                 let conn = Arc::clone(&conn);

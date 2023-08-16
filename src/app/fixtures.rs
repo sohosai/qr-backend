@@ -15,6 +15,16 @@ pub async fn insert_fixtures(
     }
 }
 
+pub async fn update_fixtures(
+    Json(fixtures): Json<crate::Fixtures>,
+    conn: Arc<Pool<Postgres>>,
+) -> StatusCode {
+    match crate::database::update_fixtures::update_fixtures(&*conn, fixtures).await {
+        Ok(()) => StatusCode::ACCEPTED,
+        _ => StatusCode::BAD_REQUEST,
+    }
+}
+
 pub async fn delete_fixtures(uuid: Option<Uuid>, conn: Arc<Pool<Postgres>>) -> StatusCode {
     match uuid {
         Some(uuid) => match crate::database::delete_fixtures::delete_fixtures(&*conn, uuid).await {
