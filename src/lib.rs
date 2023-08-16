@@ -218,3 +218,18 @@ pub struct Lending {
     /// 借りた人の所属組織
     pub borrower_org: Option<String>,
 }
+
+/// 物品を保管しているコンテナの情報
+#[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
+pub struct Container {
+    /// コンテナに振る一意のID
+    pub id: Uuid,
+    /// QRコードに振られたID
+    pub qr_id: String,
+    /// QRコードに貼られた色
+    pub qr_color: QrColor,
+    /// 保管されている部屋
+    pub storage: Stroge,
+    /// 見た目や分類などを説明するテキスト
+    pub description: String,
+}
