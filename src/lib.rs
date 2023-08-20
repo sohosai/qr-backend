@@ -18,7 +18,7 @@ pub mod database;
 ///
 /// 具体的なデータはこれ:
 /// <https://docs.google.com/spreadsheets/d/1PttDAxejyimvIQp-RKmAnYzVVEUaBb611Zgp4bUiO0I/edit#gid=0>
-#[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, sqlx::FromRow)]
 pub struct Fixtures {
     /// 備品を識別する一意のID
     pub id: Uuid,
@@ -53,7 +53,7 @@ pub struct Fixtures {
 /// しかしsqlx v0.6以降できないらしく、DBにはtextで保存して変換をこちらで行うこととする。
 /// そのため、文字列に変換する`Display`トレイトと文字列から変換する`FromStr`トレイトを実装している。
 /// 参考：<https://github.com/launchbadge/sqlx/issues/1920>
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum QrColor {
     Red,
@@ -106,7 +106,7 @@ impl From<std::string::String> for QrColor {
 /// しかしsqlx v0.6以降できないらしく、DBにはtextで保存して変換をこちらで行うこととする。
 /// そのため、文字列に変換する`Display`トレイトと文字列から変換する`FromStr`トレイトを実装している。
 /// 参考：<https://github.com/launchbadge/sqlx/issues/1920>
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum Stroge {
     /// 101という部屋
