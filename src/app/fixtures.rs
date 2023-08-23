@@ -62,6 +62,30 @@ pub async fn get_fixtures(
     }
 }
 
+pub async fn get_fixtures_list(
+    query: HashMap<String, String>,
+    conn: Arc<Pool<Postgres>>,
+) -> Json<Option<Vec<Fixtures>>> {
+    match (query.get("id"), query.get("qr_id")) {
+        (Some(id), _) => {
+            let uuid_opt = Uuid::parse_str(id).ok();
+            if let Some(uuid) = uuid_opt {
+                match get_one_fixtures(&*conn, FixturesId(uuid)).await {
+                    Ok(f) => axum::Json(Some(vec![f.unwrap()])),
+                    Err(_) => axum::Json(None),
+                }
+            } else {
+                axum::Json(None)
+            }
+        }
+        (_, Some(qr_id)) => match get_one_fixtures(&*conn, QrId(qr_id.clone())).await {
+            Ok(f) => axum::Json(Some(vec![f.unwrap()])),
+            Err(_) => axum::Json(None),
+        },
+        _ => axum::Json(None),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use axum::{extract::Json, http::StatusCode};
