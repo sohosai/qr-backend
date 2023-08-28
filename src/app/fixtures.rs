@@ -1,5 +1,6 @@
-use crate::database::get_one_fixtures::{get_one_fixtures, IdType::*};
-use crate::Fixtures;
+use crate::database::get_fixtures_list::{self, SelectInfo};
+use crate::database::get_one_fixtures::{get_one_fixtures, IdType};
+use crate::{Fixtures, Stroge};
 use axum::{extract::Json, http::StatusCode};
 use sqlx::{pool::Pool, postgres::Postgres};
 use std::collections::HashMap;
@@ -46,7 +47,7 @@ pub async fn get_fixtures(
         (Some(id), _) => {
             let uuid_opt = Uuid::parse_str(id).ok();
             if let Some(uuid) = uuid_opt {
-                match get_one_fixtures(&*conn, FixturesId(uuid)).await {
+                match get_one_fixtures(&*conn, IdType::FixturesId(uuid)).await {
                     Ok(f) => Json(f),
                     Err(_) => Json(None),
                 }
@@ -54,11 +55,86 @@ pub async fn get_fixtures(
                 Json(None)
             }
         }
-        (_, Some(qr_id)) => match get_one_fixtures(&*conn, QrId(qr_id.clone())).await {
+        (_, Some(qr_id)) => match get_one_fixtures(&*conn, IdType::QrId(qr_id.clone())).await {
             Ok(f) => Json(f),
             Err(_) => Json(None),
         },
         _ => Json(None),
+    }
+}
+
+pub async fn get_fixtures_list(
+    query: HashMap<String, String>,
+    conn: Arc<Pool<Postgres>>,
+) -> Json<Option<Vec<Fixtures>>> {
+    match (
+        query.get("id"),
+        query.get("qr_id"),
+        query.get("name"),
+        query.get("description"),
+        query.get("storage"),
+        query.get("parent_id"),
+    ) {
+        (Some(id), _, _, _, _, _) => {
+            let uuid_opt = Uuid::parse_str(id).ok();
+            if let Some(uuid) = uuid_opt {
+                match get_fixtures_list::get_fixtures_list(&*conn, SelectInfo::Id(uuid)).await {
+                    Ok(f) => axum::Json(Some(f)),
+                    Err(_) => axum::Json(None),
+                }
+            } else {
+                axum::Json(None)
+            }
+        }
+        (_, Some(qr_id), _, _, _, _) => {
+            match get_fixtures_list::get_fixtures_list(&*conn, SelectInfo::QrId(qr_id.clone()))
+                .await
+            {
+                Ok(f) => axum::Json(Some(f)),
+                Err(_) => axum::Json(None),
+            }
+        }
+        (_, _, Some(name), _, _, _) => {
+            match get_fixtures_list::get_fixtures_list(&*conn, SelectInfo::Name(name.clone())).await
+            {
+                Ok(f) => axum::Json(Some(f)),
+                Err(_) => axum::Json(None),
+            }
+        }
+        (_, _, _, Some(description), _, _) => {
+            match get_fixtures_list::get_fixtures_list(
+                &*conn,
+                SelectInfo::Description(description.clone()),
+            )
+            .await
+            {
+                Ok(f) => axum::Json(Some(f)),
+                Err(_) => axum::Json(None),
+            }
+        }
+        (_, _, _, _, Some(storage), _) => {
+            match get_fixtures_list::get_fixtures_list(
+                &*conn,
+                SelectInfo::Storage(Stroge::from(storage.clone())),
+            )
+            .await
+            {
+                Ok(f) => axum::Json(Some(f)),
+                Err(_) => axum::Json(None),
+            }
+        }
+        (_, _, _, _, _, Some(parent_id)) => {
+            match get_fixtures_list::get_fixtures_list(
+                &*conn,
+                SelectInfo::ParentId(parent_id.clone()),
+            )
+            .await
+            {
+                Ok(f) => axum::Json(Some(f)),
+                Err(_) => axum::Json(None),
+            }
+        }
+        _ => axum::Json(None),
     }
 }
 

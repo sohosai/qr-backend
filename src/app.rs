@@ -94,6 +94,13 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
             }),
         )
         .route(
+            "/get_fixtures_list",
+            get({
+                let conn = Arc::clone(&conn);
+                move |Query(query)| fixtures::get_fixtures_list(query, conn)
+            }),
+        )
+        .route(
             "/insert_spot",
             post({
                 let conn = Arc::clone(&conn);
