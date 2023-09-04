@@ -6,8 +6,6 @@ services:
     container_name: api-server
     build:
       context: .
-      args:
-        DATABASE_URL: ${DATABASE_URL}
     volumes:
       - .:/app
     ports:

@@ -8,6 +8,8 @@ ENV CARGO_TARGET_DIR=/tmp/target \
     LANG=ja_JP.utf8 \
     DATABASE_URL=${DATABASE_URL}
 
+RUN sed -i.org -e 's|ports.ubuntu.com|jp.archive.ubuntu.com|g' /etc/apt/sources.list
+
 RUN apt-get update \
   && apt-get install -y -q \
     ca-certificates \
@@ -28,8 +30,7 @@ RUN apt-get update \
 
 WORKDIR /app
 COPY . .
-RUN sqlx db create \
-  && sqlx migrate run \
-  && cargo build --release
+ARG SQLX_OFFLINE=true 
+RUN cargo build --release
 
-CMD ["cargo", "run", "--release", "--", "--bind", "0.0.0.0:3000"]
+CMD ["bash", "./init.sh"]
