@@ -11,6 +11,15 @@
 - Docker
 - DockerCompose
 
+以下の4つのURLを適切に設定します。
+
+- `POSTGRES_DB`
+- `POSTGRES_USER`
+- `POSTGRES_PASSWORD`
+- `DATABASE_URL`
+
+そのうえで以下のコマンドを実行します。
+
 ```sh
 docker-compose up -d
 ```
