@@ -29,6 +29,7 @@ pub async fn returned_lending(
             _ => StatusCode::BAD_REQUEST,
         },
         None => match qr_id {
+            // QRのIDに該当する物品情報を検索する
             Some(qr_id) => match get_one_fixtures(&*conn, IdType::QrId(qr_id)).await {
                 Ok(Some(fixtures)) => match get_lending_list(&*conn).await {
                     Ok(list) => {
@@ -36,6 +37,8 @@ pub async fn returned_lending(
                             .iter()
                             .filter(|lending| lending.fixtures_id == fixtures.id)
                         {
+                            // 物品IDが一致する貸出情報に対して返却処理を行う
+                            // 一つでも失敗したらエラーコードを返す
                             let id = lending.id;
                             match returned_lending(&*conn, id, returned_at).await {
                                 Ok(()) => {}
