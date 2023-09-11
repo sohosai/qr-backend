@@ -171,6 +171,22 @@ pub enum Area {
     Area2,
     /// 第三エリア
     Area3,
+    /// 中央図書館
+    CenterLibrary,
+    /// 石の広場
+    IshiSquare,
+    /// 医学エリア
+    Igaku,
+    /// 体育芸術エリア
+    Taigei,
+    /// 春日エリア
+    Kasuga,
+    /// 一の矢
+    Ichinoya,
+    /// 平砂
+    Hirasuna,
+    /// 追越
+    Oikoshi,
 }
 
 impl std::fmt::Display for Area {
@@ -179,6 +195,14 @@ impl std::fmt::Display for Area {
             Area::Area1 => write!(f, "area1")?,
             Area::Area2 => write!(f, "area2")?,
             Area::Area3 => write!(f, "area3")?,
+            Area::CenterLibrary => write!(f, "center_library")?,
+            Area::IshiSquare => write!(f, "ishi_square")?,
+            Area::Igaku => write!(f, "igaku")?,
+            Area::Taigei => write!(f, "taigei")?,
+            Area::Kasuga => write!(f, "kasuga")?,
+            Area::Ichinoya => write!(f, "ichinoya")?,
+            Area::Hirasuna => write!(f, "hirasuna")?,
+            Area::Oikoshi => write!(f, "oikoshi")?,
         };
         Ok(())
     }
@@ -190,6 +214,14 @@ impl From<std::string::String> for Area {
             "area1" => Area::Area1,
             "area2" => Area::Area2,
             "area3" => Area::Area3,
+            "center_library" => Area::CenterLibrary,
+            "ishi_square" => Area::IshiSquare,
+            "igaku" => Area::Igaku,
+            "taigei" => Area::Taigei,
+            "kasuga" => Area::Taigei,
+            "ichinoya" => Area::Ichinoya,
+            "hirasuna" => Area::Hirasuna,
+            "okioshi" => Area::Oikoshi,
             _ => panic!(),
         }
     }
