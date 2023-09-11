@@ -115,6 +115,23 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
             }),
         )
         .route(
+            "/get_one_spot",
+            post({
+                let conn = Arc::clone(&conn);
+                move |query: Query<HashMap<String, String>>| {
+                    let name = query.0.get("name").cloned();
+                    spot::get_one_spot(name, conn)
+                }
+            }),
+        )
+        .route(
+            "/get_spot_list",
+            post({
+                let conn = Arc::clone(&conn);
+                move || spot::get_spot_list(conn)
+            }),
+        )
+        .route(
             "/insert_container",
             post({
                 let conn = Arc::clone(&conn);
