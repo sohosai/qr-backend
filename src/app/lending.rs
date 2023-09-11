@@ -16,18 +16,40 @@ pub async fn insert_lending(Json(lending): Json<Lending>, conn: Arc<Pool<Postgre
 
 pub async fn returned_lending(
     id: Option<Uuid>,
+    qr_id: Option<String>,
     returned_at: DateTime<Utc>,
     conn: Arc<Pool<Postgres>>,
 ) -> StatusCode {
+    use crate::database::get_lending_list::*;
+    use crate::database::get_one_fixtures::*;
+    use crate::database::returned_lending::*;
     match id {
-        Some(id) => {
-            match crate::database::returned_lending::returned_lending(&*conn, id, returned_at).await
-            {
-                Ok(()) => StatusCode::ACCEPTED,
+        Some(id) => match returned_lending(&*conn, id, returned_at).await {
+            Ok(()) => StatusCode::ACCEPTED,
+            _ => StatusCode::BAD_REQUEST,
+        },
+        None => match qr_id {
+            Some(qr_id) => match get_one_fixtures(&*conn, IdType::QrId(qr_id)).await {
+                Ok(Some(fixtures)) => match get_lending_list(&*conn).await {
+                    Ok(list) => {
+                        for lending in list
+                            .iter()
+                            .filter(|lending| lending.fixtures_id == fixtures.id)
+                        {
+                            let id = lending.id;
+                            match returned_lending(&*conn, id, returned_at).await {
+                                Ok(()) => {}
+                                _ => return StatusCode::BAD_REQUEST,
+                            }
+                        }
+                        StatusCode::ACCEPTED
+                    }
+                    _ => StatusCode::BAD_REQUEST,
+                },
                 _ => StatusCode::BAD_REQUEST,
-            }
-        }
-        None => StatusCode::BAD_REQUEST,
+            },
+            None => StatusCode::BAD_REQUEST,
+        },
     }
 }
 
