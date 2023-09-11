@@ -1,0 +1,46 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT * FROM spot WHERE name = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "area",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "building",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "floor",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 4,
+        "name": "room",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "a23f5f7a09a8342a88fc6d75721d8dedc3ab2e3a5b619afb0b7c6fc5542c76d6"
+}
