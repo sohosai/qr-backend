@@ -21,6 +21,10 @@ pub mod get_fixtures_list;
 pub mod get_lending_list;
 /// 物品の取得を行う関数を提供する
 pub mod get_one_fixtures;
+/// 詳細な地点情報の取得を行う関数を提供する
+pub mod get_one_spot;
+/// 地点情報の一覧を取得を行う関数を提供する
+pub mod get_spot_list;
 /// コンテナの登録を行う関数を提供する
 pub mod insert_container;
 /// 物品登録を行う関数を提供する

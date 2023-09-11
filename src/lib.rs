@@ -154,7 +154,7 @@ pub struct Spot {
     pub building: Option<String>,
     /// 階数。
     /// 建物ではないところで使う可能性もあるのでOption型。
-    pub floor: Option<u8>,
+    pub floor: Option<i32>,
     /// 部屋の番号や名前など。
     /// 建物ではないところで使う可能性もあるのでOption型。
     pub room: Option<String>,
