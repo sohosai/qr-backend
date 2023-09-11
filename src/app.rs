@@ -81,8 +81,9 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
                 let conn = Arc::clone(&conn);
                 move |query: Query<HashMap<String, String>>| {
                     let uuid_opt = query.0.get("id").and_then(|s| Uuid::parse_str(s).ok());
+                    let qr_id_opt = query.0.get("qr_id").cloned();
                     let now = Utc::now();
-                    lending::returned_lending(uuid_opt, now, conn)
+                    lending::returned_lending(uuid_opt, qr_id_opt, now, conn)
                 }
             }),
         )
