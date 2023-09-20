@@ -18,10 +18,12 @@ jobs:
       - name: Set tag
         id: set_tag
         run: |
+          TAG_NAME="${{ github.ref_name }}"
+          CLEANED_TAG_NAME=$(echo "$TAG_NAME" | sed 's/[^a-zA-Z0-9_.-]/-/g')
           if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
             echo "::set-output name=tag::latest"
           else
-            echo "::set-output name=tag::${{ github.ref_name }}"
+            echo "::set-output name=tag::$CLEANED_TAG_NAME"
           fi
       - name: Build and Push
         uses: docker/build-push-action@v5
