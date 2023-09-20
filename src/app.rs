@@ -1,6 +1,7 @@
 use anyhow::Result;
 use axum::{
     extract::Query,
+    http::Method,
     routing::{delete, get, post},
     Router,
 };
@@ -8,6 +9,7 @@ use chrono::Utc;
 use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::sync::Arc;
+use tower_http::cors::{Any, CorsLayer};
 use uuid::Uuid;
 
 /// コンテナの管理を行うエンドポイントの定義
@@ -138,6 +140,11 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
                 let conn = Arc::clone(&conn);
                 move |body| container::insert_container(body, conn)
             }),
+        )
+        .layer(
+            CorsLayer::new()
+                .allow_methods([Method::GET, Method::POST])
+                .allow_origin(Any),
         );
 
     // サーバーの実行
