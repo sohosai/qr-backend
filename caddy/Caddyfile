@@ -1,0 +1,11 @@
+{
+    email jsys@sohosai.com
+}
+
+api.qr.sohosai.com {
+    reverse_proxy api-server:3000
+    
+    log {
+        level error
+    }
+}
