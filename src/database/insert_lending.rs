@@ -70,5 +70,19 @@ mod tests {
         .unwrap();
         let res = insert_lending(&pool, info).await;
         assert!(res.is_ok());
+
+        // 同じIDでもう一度やってみる
+        let info = serde_json::from_value(serde_json::json!({
+          "id": id,
+          "fixtures_id": fixtures_id,
+          "spot_name": "test",
+          "lending_at": "2023-08-07 15:56:35 UTC",
+          "borrower_name": "test",
+          "borrower_number": 202200000,
+          "borrower_org": "jsys"
+        }))
+        .unwrap();
+        let res2 = insert_lending(&pool, info).await;
+        assert!(res2.is_err());
     }
 }
