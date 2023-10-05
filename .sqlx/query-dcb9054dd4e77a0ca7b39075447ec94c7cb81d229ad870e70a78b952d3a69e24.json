@@ -15,31 +15,36 @@
       },
       {
         "ordinal": 2,
-        "name": "spot_name",
+        "name": "fixtures_qr_id",
         "type_info": "Text"
       },
       {
         "ordinal": 3,
+        "name": "spot_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
         "name": "lending_at",
         "type_info": "Timestamptz"
       },
       {
-        "ordinal": 4,
+        "ordinal": 5,
         "name": "returned_at",
         "type_info": "Timestamptz"
       },
       {
-        "ordinal": 5,
+        "ordinal": 6,
         "name": "borrower_name",
         "type_info": "Text"
       },
       {
-        "ordinal": 6,
+        "ordinal": 7,
         "name": "borrower_number",
         "type_info": "Int4"
       },
       {
-        "ordinal": 7,
+        "ordinal": 8,
         "name": "borrower_org",
         "type_info": "Text"
       }
@@ -48,6 +53,7 @@
       "Left": []
     },
     "nullable": [
+      false,
       false,
       false,
       false,
