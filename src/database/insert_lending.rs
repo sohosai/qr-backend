@@ -9,6 +9,7 @@ where
     let Lending {
         id,
         fixtures_id,
+        fixtures_qr_id,
         spot_name,
         lending_at,
         returned_at,
@@ -22,15 +23,17 @@ where
     INSERT INTO lending (
     id,
     fixtures_id,
+    fixtures_qr_id,
     spot_name,
     lending_at,
     returned_at,
     borrower_name,
     borrower_number,
     borrower_org
-    ) VALUES ( $1, $2, $3, $4, $5, $6, $7, $8 )"#,
+    ) VALUES ( $1, $2, $3, $4, $5, $6, $7, $8, $9 )"#,
         id,
         fixtures_id,
+        fixtures_qr_id,
         spot_name,
         lending_at,
         returned_at,
@@ -57,6 +60,7 @@ mod tests {
         let info = serde_json::from_value(serde_json::json!({
           "id": id,
           "fixtures_id": fixtures_id,
+          "fixtures_qr_id": "x234",
           "spot_name": "test",
           "lending_at": "2023-08-07 15:56:35 UTC",
           "borrower_name": "test",

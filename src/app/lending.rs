@@ -90,6 +90,7 @@ mod tests {
                 serde_json::from_value(json!({
                     "id": id,
                     "fixtures_id": fixtures_id,
+                    "fixtures_qr_id": "x234",
                     "spot_name": "test",
                     "lending_at": "2023-08-07 15:56:35 UTC",
                     "borrower_name": "test",

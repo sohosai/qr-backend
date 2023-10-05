@@ -235,6 +235,8 @@ pub struct Lending {
     pub id: Uuid,
     /// 貸し出した物品のID
     pub fixtures_id: Uuid,
+    /// 貸し出した物品のQR ID
+    pub fixtures_qr_id: String,
     /// 貸し出して持っていく地点の名称
     /// Spot型のnameフィールドと一致する必要がある
     pub spot_name: String,
