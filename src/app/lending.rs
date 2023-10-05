@@ -2,6 +2,7 @@ use crate::Lending;
 use axum::{extract::Json, http::StatusCode};
 use chrono::{DateTime, Utc};
 use sqlx::{pool::Pool, postgres::Postgres};
+use std::collections::HashMap;
 use std::sync::Arc;
 use uuid::Uuid;
 
@@ -60,6 +61,47 @@ pub async fn get_lending_list(conn: Arc<Pool<Postgres>>) -> Json<Option<Vec<Lend
     match crate::database::get_lending_list::get_lending_list(&*conn).await {
         Ok(v) => axum::Json(Some(v)),
         _ => axum::Json(None),
+    }
+}
+
+pub async fn get_one_lending(
+    query: HashMap<String, String>,
+    conn: Arc<Pool<Postgres>>,
+) -> Json<Option<Lending>> {
+    use crate::database::get_one_lending::*;
+    match (
+        query.get("lending_id"),
+        query.get("fixtures_id"),
+        query.get("fixtures_qr_id"),
+    ) {
+        (Some(lending_id), _, _) => {
+            let uuid_opt = Uuid::parse_str(lending_id).ok();
+            if let Some(uuid) = uuid_opt {
+                match get_one_lending(&*conn, IdType::LendingId(uuid)).await {
+                    Ok(v) => axum::Json(v),
+                    _ => axum::Json(None),
+                }
+            } else {
+                Json(None)
+            }
+        }
+        (_, Some(fixtures_id), _) => {
+            let uuid_opt = Uuid::parse_str(fixtures_id).ok();
+            if let Some(uuid) = uuid_opt {
+                match get_one_lending(&*conn, IdType::FixturesId(uuid)).await {
+                    Ok(v) => axum::Json(v),
+                    _ => axum::Json(None),
+                }
+            } else {
+                Json(None)
+            }
+        }
+        (_, _, Some(qr_id)) => match get_one_lending(&*conn, IdType::QrId(qr_id.to_string())).await
+        {
+            Ok(v) => axum::Json(v),
+            _ => axum::Json(None),
+        },
+        _ => Json(None),
     }
 }
 
