@@ -1,0 +1,22 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE lending SET\n            fixtures_id=$2,\n            fixtures_qr_id=$3,\n            spot_name=$4,\n            lending_at=$5,\n            returned_at=$6,\n            borrower_name=$7,\n            borrower_number=$8,\n            borrower_org=$9\n          WHERE id=$1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Text",
+        "Text",
+        "Timestamptz",
+        "Timestamptz",
+        "Text",
+        "Int4",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "b3a35c5cc31fde52a03f31115eb3bba3b8334564aaee9e2b88bf2f85a992e10c"
+}

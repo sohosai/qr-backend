@@ -1,6 +1,7 @@
 CREATE TABLE lending (
     id uuid PRIMARY KEY,
     fixtures_id uuid NOT NULL,
+    fixtures_qr_id text NOT NULL,
     spot_name text NOT NULL,
     lending_at timestamptz NOT NULL,
     returned_at timestamptz,

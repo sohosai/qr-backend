@@ -9,6 +9,7 @@ where
     let Lending {
         id,
         fixtures_id,
+        fixtures_qr_id,
         spot_name,
         lending_at,
         returned_at,
@@ -19,15 +20,17 @@ where
     sqlx::query!(
         r#"UPDATE lending SET
             fixtures_id=$2,
-            spot_name=$3,
-            lending_at=$4,
-            returned_at=$5,
-            borrower_name=$6,
-            borrower_number=$7,
-            borrower_org=$8
+            fixtures_qr_id=$3,
+            spot_name=$4,
+            lending_at=$5,
+            returned_at=$6,
+            borrower_name=$7,
+            borrower_number=$8,
+            borrower_org=$9
           WHERE id=$1"#,
         id,
         fixtures_id,
+        fixtures_qr_id,
         spot_name,
         lending_at,
         returned_at,
@@ -55,6 +58,7 @@ mod tests {
         let info = serde_json::from_value(serde_json::json!({
           "id": id,
           "fixtures_id": fixtures_id,
+          "fixtures_qr_id": "x234",
           "spot_name": "test",
           "lending_at": "2023-08-07 15:56:35 UTC",
           "borrower_name": "test",
@@ -68,6 +72,7 @@ mod tests {
         let new_info = serde_json::from_value(serde_json::json!({
           "id": id,
           "fixtures_id": fixtures_id,
+          "fixtures_qr_id": "235",
           "spot_name": "test",
           "lending_at": "2023-08-16 15:56:35 UTC",
           "borrower_name": "test2",

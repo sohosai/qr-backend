@@ -29,6 +29,7 @@ mod tests {
         let info: Lending = serde_json::from_value(serde_json::json!({
           "id": "550e8400-e29b-41d4-a716-446655440000",
           "fixtures_id":  "550e8400-e29b-41d4-a716-446655440001",
+          "fixtures_qr_id": "x234",
           "spot_name": "test1",
           "lending_at": "2023-08-07 15:56:35 UTC",
           "borrower_name": "test",
@@ -41,6 +42,7 @@ mod tests {
         let info: Lending = serde_json::from_value(serde_json::json!({
           "id": "550e8400-e29b-41d4-a716-446655440002",
           "fixtures_id":  "550e8400-e29b-41d4-a716-446655440003",
+          "fixtures_qr_id" : "x235",
           "spot_name": "test2",
           "lending_at": "2023-08-07 15:56:35 UTC",
           "borrower_name": "test",
@@ -53,6 +55,7 @@ mod tests {
         let info: Lending = serde_json::from_value(serde_json::json!({
           "id": "550e8400-e29b-41d4-a716-446655440004",
           "fixtures_id":  "550e8400-e29b-41d4-a716-446655440004",
+          "fixtures_qr_id": "x236",
           "spot_name": "test3",
           "lending_at": "2023-08-07 15:56:35 UTC",
           "borrower_name": "test",
