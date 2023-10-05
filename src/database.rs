@@ -21,6 +21,8 @@ pub mod get_fixtures_list;
 pub mod get_lending_list;
 /// 物品の取得を行う関数を提供する
 pub mod get_one_fixtures;
+/// 物品の貸し出しについての情報を取得する
+pub mod get_one_lending;
 /// 詳細な地点情報の取得を行う関数を提供する
 pub mod get_one_spot;
 /// 地点情報の一覧を取得を行う関数を提供する
