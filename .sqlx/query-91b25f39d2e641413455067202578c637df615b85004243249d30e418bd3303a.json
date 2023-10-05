@@ -1,0 +1,70 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT * FROM lending WHERE fixtures_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "fixtures_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "fixtures_qr_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "spot_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "lending_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 5,
+        "name": "returned_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 6,
+        "name": "borrower_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 7,
+        "name": "borrower_number",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 8,
+        "name": "borrower_org",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "91b25f39d2e641413455067202578c637df615b85004243249d30e418bd3303a"
+}
