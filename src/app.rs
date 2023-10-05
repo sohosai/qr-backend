@@ -104,6 +104,13 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
             }),
         )
         .route(
+            "/get_is_lending",
+            get({
+                let conn = Arc::clone(&conn);
+                move |Query(query)| lending::get_is_lending(query, conn)
+            }),
+        )
+        .route(
             "/get_fixtures_list",
             get({
                 let conn = Arc::clone(&conn);

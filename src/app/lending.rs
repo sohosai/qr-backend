@@ -105,6 +105,47 @@ pub async fn get_one_lending(
     }
 }
 
+pub async fn get_is_lending(
+    query: HashMap<String, String>,
+    conn: Arc<Pool<Postgres>>,
+) -> Json<bool> {
+    use crate::database::get_one_lending::*;
+    match (
+        query.get("lending_id"),
+        query.get("fixtures_id"),
+        query.get("fixtures_qr_id"),
+    ) {
+        (Some(lending_id), _, _) => {
+            let uuid_opt = Uuid::parse_str(lending_id).ok();
+            if let Some(uuid) = uuid_opt {
+                match get_one_lending(&*conn, IdType::LendingId(uuid)).await {
+                    Ok(Some(_)) => axum::Json(true),
+                    _ => axum::Json(false),
+                }
+            } else {
+                Json(false)
+            }
+        }
+        (_, Some(fixtures_id), _) => {
+            let uuid_opt = Uuid::parse_str(fixtures_id).ok();
+            if let Some(uuid) = uuid_opt {
+                match get_one_lending(&*conn, IdType::FixturesId(uuid)).await {
+                    Ok(Some(_)) => axum::Json(true),
+                    _ => axum::Json(false),
+                }
+            } else {
+                Json(false)
+            }
+        }
+        (_, _, Some(qr_id)) => match get_one_lending(&*conn, IdType::QrId(qr_id.to_string())).await
+        {
+            Ok(Some(_)) => axum::Json(true),
+            _ => axum::Json(false),
+        },
+        _ => Json(false),
+    }
+}
+
 pub async fn update_lending(Json(lending): Json<Lending>, conn: Arc<Pool<Postgres>>) -> StatusCode {
     match crate::database::update_lending::update_lending(&*conn, lending).await {
         Ok(()) => StatusCode::ACCEPTED,
