@@ -12,6 +12,8 @@ use uuid::Uuid;
 pub mod app;
 /// データベース周りのモジュール
 pub mod database;
+/// 検索エンジン周りのモジュール
+pub mod search_engine;
 
 /// 備品情報のデータ。
 /// 必要な構成要素はこちらを参照<https://scrapbox.io/jsys/QR_2023_Design_Doc>

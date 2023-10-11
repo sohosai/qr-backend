@@ -1,5 +1,6 @@
 use crate::database::get_fixtures_list::{self, SelectInfo};
 use crate::database::get_one_fixtures::{get_one_fixtures, IdType};
+use crate::search_engine::{SearchFixtures, SearchResult};
 use crate::{Fixtures, Stroge};
 use axum::{extract::Json, http::StatusCode};
 use sqlx::{pool::Pool, postgres::Postgres};
@@ -135,6 +136,21 @@ pub async fn get_fixtures_list(
             }
         }
         _ => axum::Json(None),
+    }
+}
+
+pub async fn search_fixtures(
+    keywords_str: String,
+    context: Arc<SearchFixtures>,
+) -> Json<Option<Vec<SearchResult<Fixtures>>>> {
+    let keywords = keywords_str
+        .split(' ')
+        .map(|s| s.to_string())
+        .collect::<Vec<String>>();
+    let context = &*context;
+    match context.search(&keywords).await {
+        Ok(res) => Json(Some(res)),
+        _ => Json(None),
     }
 }
 

@@ -33,8 +33,22 @@ services:
       - "postgres_data_dev:/var/lib/postgresql"
     networks:
       - net
+  search-engine:
+    image: getmeili/meilisearch:v1.4
+    container_name: meilisearch
+    working_dir: /app
+    ports:
+      - 7700:7700
+    restart: always
+    environment:
+      MEILI_MASTER_KEY: ${MEILI_MASTER_KEY}
+    volumes:
+      - "meili_data:/data.ms"
+    networks:
+      - net
 volumes:
   postgres_data_dev:
+  meili_data:
 networks:
   net:
     driver: bridge

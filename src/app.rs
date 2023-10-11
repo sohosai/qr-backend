@@ -12,6 +12,8 @@ use std::sync::Arc;
 use tower_http::cors::{Any, CorsLayer};
 use uuid::Uuid;
 
+use crate::search_engine;
+
 /// コンテナの管理を行うエンドポイントの定義
 pub mod container;
 /// 物品情報の登録を行うエンドポイントの定義
@@ -25,6 +27,8 @@ pub mod spot;
 /// データベースを起動してエントリポイントに応じて関数を呼び出す
 pub async fn app(bind: SocketAddr) -> Result<()> {
     let conn = Arc::new(crate::database::create_pool().await?);
+
+    let search_fixtures_context = Arc::new(search_engine::SearchFixtures::new());
 
     // migrateファイルを適用
     crate::database::migrate(&mut conn.acquire().await?).await?;
@@ -61,6 +65,20 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
             get({
                 let conn = Arc::clone(&conn);
                 move |Query(query)| fixtures::get_fixtures(query, conn)
+            }),
+        )
+        .route(
+            "/search_fixtures",
+            get({
+                let conn = Arc::clone(&search_fixtures_context);
+                move |query: Query<HashMap<String, String>>| {
+                    let keywords_str = query
+                        .0
+                        .get("keywords")
+                        .map(|s| s.to_string())
+                        .unwrap_or_default();
+                    fixtures::search_fixtures(keywords_str, conn)
+                }
             }),
         )
         .route(
