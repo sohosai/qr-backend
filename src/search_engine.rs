@@ -91,7 +91,7 @@ impl Default for SearchFixtures {
 impl SearchFixtures {
     pub fn new() -> Self {
         SearchFixtures {
-            context: Context::new("index", "id"),
+            context: Context::new("fixtures", "id"),
         }
     }
     pub async fn add_or_replace(&self, lst: &[Fixtures]) -> Result<()> {
