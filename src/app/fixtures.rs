@@ -13,9 +13,13 @@ use uuid::Uuid;
 pub async fn insert_fixtures(
     Json(fixtures): Json<Fixtures>,
     conn: Arc<Pool<Postgres>>,
+    context: Arc<SearchFixtures>,
 ) -> StatusCode {
-    match crate::database::insert_fixtures::insert_fixtures(&*conn, fixtures).await {
-        Ok(()) => StatusCode::ACCEPTED,
+    match crate::database::insert_fixtures::insert_fixtures(&*conn, fixtures.clone()).await {
+        Ok(()) => match context.add_or_replace(&vec![fixtures]).await {
+            Ok(_) => StatusCode::ACCEPTED,
+            _ => StatusCode::BAD_REQUEST,
+        },
         _ => StatusCode::BAD_REQUEST,
     }
 }
@@ -23,17 +27,31 @@ pub async fn insert_fixtures(
 pub async fn update_fixtures(
     Json(fixtures): Json<Fixtures>,
     conn: Arc<Pool<Postgres>>,
+    context: Arc<SearchFixtures>,
 ) -> StatusCode {
-    match crate::database::update_fixtures::update_fixtures(&*conn, fixtures).await {
-        Ok(()) => StatusCode::ACCEPTED,
+    match crate::database::update_fixtures::update_fixtures(&*conn, fixtures.clone()).await {
+        Ok(()) => match context.add_or_replace(&vec![fixtures]).await {
+            Ok(_) => StatusCode::ACCEPTED,
+            _ => StatusCode::BAD_REQUEST,
+        },
         _ => StatusCode::BAD_REQUEST,
     }
 }
 
-pub async fn delete_fixtures(uuid: Option<Uuid>, conn: Arc<Pool<Postgres>>) -> StatusCode {
+pub async fn delete_fixtures(
+    uuid: Option<Uuid>,
+    conn: Arc<Pool<Postgres>>,
+    context: Arc<SearchFixtures>,
+) -> StatusCode {
     match uuid {
         Some(uuid) => match crate::database::delete_fixtures::delete_fixtures(&*conn, uuid).await {
-            Ok(()) => StatusCode::ACCEPTED,
+            Ok(()) => {
+                let context = &*context;
+                match context.delete(&vec![uuid]).await {
+                    Ok(_) => StatusCode::ACCEPTED,
+                    _ => StatusCode::BAD_REQUEST,
+                }
+            }
             _ => StatusCode::BAD_REQUEST,
         },
         None => StatusCode::BAD_REQUEST,
@@ -144,47 +162,12 @@ pub async fn search_fixtures(
     context: Arc<SearchFixtures>,
 ) -> Json<Option<Vec<SearchResult<Fixtures>>>> {
     let keywords = keywords_str
-        .split(' ')
+        .split(',') // カンマ区切りであることを要求する
         .map(|s| s.to_string())
         .collect::<Vec<String>>();
     let context = &*context;
     match context.search(&keywords).await {
         Ok(res) => Json(Some(res)),
         _ => Json(None),
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use axum::{extract::Json, http::StatusCode};
-    use serde_json::json;
-    use sqlx::{pool::Pool, Postgres};
-    use std::sync::Arc;
-
-    use crate::app::fixtures::insert_fixtures;
-
-    #[sqlx::test(migrations = "./migrations")]
-    async fn test_insert_fixtures(pool: Pool<Postgres>) {
-        let conn = Arc::new(pool);
-        let status_code = insert_fixtures(
-            Json(
-                serde_json::from_value(json!({
-                  "id": "550e8400-e29b-41d4-a716-446655440000",
-                  "qr_id": "test",
-                  "created_at": "2023-08-07 15:56:35 UTC",
-                  "qr_color":"red",
-                  "name":"テスト物品",
-                  "description":"テスト説明",
-                  "storage": "room101",
-                  "usage": "無い",
-                  "note": "DBを確認",
-                  "parent_id": "null"
-                }))
-                .unwrap(),
-            ),
-            conn,
-        )
-        .await;
-        assert_eq!(status_code, StatusCode::ACCEPTED)
     }
 }

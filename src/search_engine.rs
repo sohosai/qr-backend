@@ -2,12 +2,14 @@ use crate::Fixtures;
 use anyhow::Result;
 use meilisearch_sdk::client::*;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use uuid::Uuid;
 
 /// 抽象化された検索コンテキスト
 #[derive(Clone)]
 pub struct Context {
     client: Client,
     index: String,
+    primary_key: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -18,18 +20,33 @@ pub struct SearchResult<T> {
 
 impl Context {
     /// コンテキストを新しく作成
-    pub fn new(index: &str) -> Self {
+    pub fn new(index: &str, primary_key: &str) -> Self {
         Context {
             client: Client::new("http://localhost:7700", Some("masterKey")),
             index: index.to_string(),
+            primary_key: primary_key.to_string(),
         }
     }
 
-    /// 情報を追加する
-    pub async fn add_documents<T: Serialize>(&self, documents: &[T]) -> Result<()> {
+    /// 情報を追加または更新
+    pub async fn add_or_replace_documents<T: Serialize>(&self, documents: &[T]) -> Result<()> {
         let client = &self.client;
         let index = client.index(&self.index);
-        let task = index.add_documents(documents, None).await?;
+        let task = index
+            .add_documents(documents, Some(&self.primary_key))
+            .await?;
+        client.wait_for_task(task, None, None).await?;
+        Ok(())
+    }
+
+    /// 削除する
+    pub async fn delete_documents<T>(&self, keys: &[T]) -> Result<()>
+    where
+        T: std::fmt::Display + Serialize + std::fmt::Debug,
+    {
+        let client = &self.client;
+        let index = client.index(&self.index);
+        let task = index.delete_documents(keys).await?;
         client.wait_for_task(task, None, None).await?;
         Ok(())
     }
@@ -65,12 +82,18 @@ pub struct SearchFixtures {
 impl SearchFixtures {
     pub fn new() -> Self {
         SearchFixtures {
-            context: Context::new("index"),
+            context: Context::new("index", "id"),
         }
     }
-    pub async fn add(&self, lst: &[Fixtures]) -> Result<()> {
-        self.context.add_documents(lst).await
+    pub async fn add_or_replace(&self, lst: &[Fixtures]) -> Result<()> {
+        self.context.add_or_replace_documents(lst).await
     }
+
+    /// 削除する
+    pub async fn delete(&self, keys: &[Uuid]) -> Result<()> {
+        self.context.delete_documents(keys).await
+    }
+
     /// 複数の単語について検索
     /// くっつけて重複削除
     pub async fn search(&self, keywords: &[String]) -> Result<Vec<SearchResult<Fixtures>>> {

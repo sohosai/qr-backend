@@ -40,23 +40,26 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
             "/insert_fixtures",
             post({
                 let conn = Arc::clone(&conn);
-                move |body| fixtures::insert_fixtures(body, conn)
+                let context = Arc::clone(&search_fixtures_context);
+                move |body| fixtures::insert_fixtures(body, conn, context)
             }),
         )
         .route(
             "/update_fixtures",
             post({
                 let conn = Arc::clone(&conn);
-                move |body| fixtures::update_fixtures(body, conn)
+                let context = Arc::clone(&search_fixtures_context);
+                move |body| fixtures::update_fixtures(body, conn, context)
             }),
         )
         .route(
             "/delete_fixtures",
             delete({
                 let conn = Arc::clone(&conn);
+                let context = Arc::clone(&search_fixtures_context);
                 move |query: Query<HashMap<String, String>>| {
                     let uuid_opt = query.0.get("id").and_then(|s| Uuid::parse_str(s).ok());
-                    fixtures::delete_fixtures(uuid_opt, conn)
+                    fixtures::delete_fixtures(uuid_opt, conn, context)
                 }
             }),
         )
@@ -70,14 +73,14 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
         .route(
             "/search_fixtures",
             get({
-                let conn = Arc::clone(&search_fixtures_context);
+                let context = Arc::clone(&search_fixtures_context);
                 move |query: Query<HashMap<String, String>>| {
                     let keywords_str = query
                         .0
                         .get("keywords")
                         .map(|s| s.to_string())
                         .unwrap_or_default();
-                    fixtures::search_fixtures(keywords_str, conn)
+                    fixtures::search_fixtures(keywords_str, context)
                 }
             }),
         )
