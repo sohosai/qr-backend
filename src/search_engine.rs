@@ -2,6 +2,7 @@ use crate::Fixtures;
 use anyhow::Result;
 use meilisearch_sdk::client::*;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use std::env;
 use uuid::Uuid;
 
 /// 抽象化された検索コンテキスト
@@ -21,8 +22,10 @@ pub struct SearchResult<T> {
 impl Context {
     /// コンテキストを新しく作成
     pub fn new(index: &str, primary_key: &str) -> Self {
+        let master_key = env::var("MEILI_MASTER_KEY").expect("MEILI_MASTER_KEY is not defined");
+        let url = env::var("MEILI_URL").expect("MEILI_URL is not defined");
         Context {
-            client: Client::new("http://localhost:7700", Some("masterKey")),
+            client: Client::new(url, Some(master_key)),
             index: index.to_string(),
             primary_key: primary_key.to_string(),
         }
