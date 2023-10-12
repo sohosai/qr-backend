@@ -12,6 +12,8 @@ use std::sync::Arc;
 use tower_http::cors::{Any, CorsLayer};
 use uuid::Uuid;
 
+use crate::search_engine;
+
 /// コンテナの管理を行うエンドポイントの定義
 pub mod container;
 /// 物品情報の登録を行うエンドポイントの定義
@@ -26,6 +28,8 @@ pub mod spot;
 pub async fn app(bind: SocketAddr) -> Result<()> {
     let conn = Arc::new(crate::database::create_pool().await?);
 
+    let search_fixtures_context = Arc::new(search_engine::SearchFixtures::new());
+
     // migrateファイルを適用
     crate::database::migrate(&mut conn.acquire().await?).await?;
 
@@ -36,23 +40,26 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
             "/insert_fixtures",
             post({
                 let conn = Arc::clone(&conn);
-                move |body| fixtures::insert_fixtures(body, conn)
+                let context = Arc::clone(&search_fixtures_context);
+                move |body| fixtures::insert_fixtures(body, conn, context)
             }),
         )
         .route(
             "/update_fixtures",
             post({
                 let conn = Arc::clone(&conn);
-                move |body| fixtures::update_fixtures(body, conn)
+                let context = Arc::clone(&search_fixtures_context);
+                move |body| fixtures::update_fixtures(body, conn, context)
             }),
         )
         .route(
             "/delete_fixtures",
             delete({
                 let conn = Arc::clone(&conn);
+                let context = Arc::clone(&search_fixtures_context);
                 move |query: Query<HashMap<String, String>>| {
                     let uuid_opt = query.0.get("id").and_then(|s| Uuid::parse_str(s).ok());
-                    fixtures::delete_fixtures(uuid_opt, conn)
+                    fixtures::delete_fixtures(uuid_opt, conn, context)
                 }
             }),
         )
@@ -61,6 +68,20 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
             get({
                 let conn = Arc::clone(&conn);
                 move |Query(query)| fixtures::get_fixtures(query, conn)
+            }),
+        )
+        .route(
+            "/search_fixtures",
+            get({
+                let context = Arc::clone(&search_fixtures_context);
+                move |query: Query<HashMap<String, String>>| {
+                    let keywords_str = query
+                        .0
+                        .get("keywords")
+                        .map(|s| s.to_string())
+                        .unwrap_or_default();
+                    fixtures::search_fixtures(keywords_str, context)
+                }
             }),
         )
         .route(

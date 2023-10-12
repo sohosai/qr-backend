@@ -33,6 +33,22 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - "postgres_data_dev:/var/lib/postgresql"
+  meilisearch:
+    container_name: meilisearch
+    image: getmeili/meilisearch:v1.4
+    restart: always
+    working_dir: /app
+    ports:
+      - 7700:7700
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U qr"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    environment:
+      MEILI_MASTER_KEY: ${MEILI_MASTER_KEY}
+    volumes:
+      - "meili_data:/data.ms"
   caddy:
     image: caddy:2.7.4-alpine
     ports:
@@ -44,3 +60,4 @@ services:
       - ./caddy/data:/data
 volumes:
   postgres_data_dev:
+  meili_data:
