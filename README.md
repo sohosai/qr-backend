@@ -11,12 +11,13 @@
 - Docker
 - DockerCompose
 
-以下の4つのURLを適切に設定します。
+以下の5つの環境変数を適切に設定します。
 
 - `POSTGRES_DB`
 - `POSTGRES_USER`
 - `POSTGRES_PASSWORD`
 - `DATABASE_URL`
+- `MEILI_MASTER_KEY`
 
 そのうえで以下のコマンドを実行します。
 
@@ -32,6 +33,7 @@ docker-compose up -d
 - rustc
 - sqlx-cli
 - postgesql
+- meilisearch
 
 このソフトウェアはRustで書かれています。そのためRustのコンパイラであるrustcとパッケージマネージャ兼ビルドツールであるcargoをインストールする必要があります。
 rustupを使用した公式の方法に従うことでそれぞれインストールすることができます（[公式のダウンロードページ](https://www.rust-lang.org/ja/tools/install)）。
@@ -74,6 +76,22 @@ sudo apt-get -y install postgresql
 brew update
 brew install postgresql
 ```
+
+検索エンジンであるmeilisearchは各々の環境に合わせたインストールを行なってください（[公式のインストール方法説明ページ](https://www.meilisearch.com/docs/learn/getting_started/installation#installation)）。
+
+その後、環境変数
+
+- `MEILI_MASTER_KEY`
+- `MEILI_URL`
+
+の2つを設定した上で
+
+```sh
+meilisearch --master-key=$MEILI_MASTER_KEY --http-addr=$MEILI_URL
+```
+
+のようにして起動して下さい。ただし、Windowsなどでは具体的なコマンドは異なるかもしれません。
+
 
 ### データベースの設定
 
