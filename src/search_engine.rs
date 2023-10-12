@@ -82,12 +82,7 @@ pub struct SearchFixtures {
     context: Context,
 }
 
-impl Default for SearchFixtures {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
+#[allow(clippy::new_without_default)]
 impl SearchFixtures {
     pub fn new() -> Self {
         SearchFixtures {
