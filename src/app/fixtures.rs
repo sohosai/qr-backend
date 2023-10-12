@@ -47,7 +47,7 @@ pub async fn delete_fixtures(
         Some(uuid) => match crate::database::delete_fixtures::delete_fixtures(&*conn, uuid).await {
             Ok(()) => {
                 let context = &*context;
-                match context.delete(&vec![uuid]).await {
+                match context.delete(&[uuid]).await {
                     Ok(_) => StatusCode::ACCEPTED,
                     _ => StatusCode::BAD_REQUEST,
                 }

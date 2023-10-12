@@ -82,6 +82,12 @@ pub struct SearchFixtures {
     context: Context,
 }
 
+impl Default for SearchFixtures {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl SearchFixtures {
     pub fn new() -> Self {
         SearchFixtures {
