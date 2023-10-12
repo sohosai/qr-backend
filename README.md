@@ -82,12 +82,13 @@ brew install postgresql
 その後、環境変数
 
 - `MEILI_MASTER_KEY`
+- `MEILI_HTTP_ADDR`
 - `MEILI_URL`
 
 の2つを設定した上で
 
 ```sh
-meilisearch --master-key=$MEILI_MASTER_KEY --http-addr=$MEILI_URL
+meilisearch --master-key=$MEILI_MASTER_KEY --http-addr=$MEILI_HTTP_ADDR
 ```
 
 のようにして起動して下さい。ただし、Windowsなどでは具体的なコマンドは異なるかもしれません。
