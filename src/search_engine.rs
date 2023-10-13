@@ -9,8 +9,8 @@ use uuid::Uuid;
 #[derive(Clone)]
 pub struct Context {
     client: Client,
-    index: String,
-    primary_key: String,
+    pub(crate) index: String,
+    pub(crate) primary_key: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -79,7 +79,7 @@ impl Context {
 
 /// 物品情報についての検索コンテキストなど
 pub struct SearchFixtures {
-    context: Context,
+    pub(crate) context: Context,
 }
 
 #[allow(clippy::new_without_default)]
