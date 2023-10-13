@@ -10,6 +10,7 @@ use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::sync::Arc;
 use tower_http::cors::{Any, CorsLayer};
+use tracing::*;
 use uuid::Uuid;
 
 use crate::search_engine;
@@ -23,22 +24,42 @@ pub mod lending;
 /// 場所の管理を行うエンドポイントの定義
 pub mod spot;
 
+/// ログを出力するための設定など
+async fn init_logger() -> Result<()> {
+    let subscriber = tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::INFO)
+        .finish();
+    tracing::subscriber::set_global_default(subscriber)?;
+    Ok(())
+}
+
 /// サーバーの実体
 /// データベースを起動してエントリポイントに応じて関数を呼び出す
 pub async fn app(bind: SocketAddr) -> Result<()> {
+    init_logger().await?;
+
     let conn = Arc::new(crate::database::create_pool().await?);
+    info!("DBのコネクションプール作成");
 
     let search_fixtures_context = Arc::new(search_engine::SearchFixtures::new());
+    info!("検索エンジンのcontext作成");
 
     // migrateファイルを適用
     crate::database::migrate(&mut conn.acquire().await?).await?;
 
     // pathと関数の実体の紐づけ
     let app = Router::new()
-        .route("/ping", get(ping))
+        .route(
+            "/ping",
+            get({
+                info!("GET /ping");
+                ping
+            }),
+        )
         .route(
             "/insert_fixtures",
             post({
+                info!("POST /insert_fixtures");
                 let conn = Arc::clone(&conn);
                 let context = Arc::clone(&search_fixtures_context);
                 move |body| fixtures::insert_fixtures(body, conn, context)
@@ -47,6 +68,7 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
         .route(
             "/update_fixtures",
             post({
+                info!("POST /update_fixtures");
                 let conn = Arc::clone(&conn);
                 let context = Arc::clone(&search_fixtures_context);
                 move |body| fixtures::update_fixtures(body, conn, context)
@@ -55,6 +77,7 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
         .route(
             "/delete_fixtures",
             delete({
+                info!("DELETE /delete_fixtures");
                 let conn = Arc::clone(&conn);
                 let context = Arc::clone(&search_fixtures_context);
                 move |query: Query<HashMap<String, String>>| {
@@ -66,6 +89,7 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
         .route(
             "/get_fixtures",
             get({
+                info!("GET /get_fixtures");
                 let conn = Arc::clone(&conn);
                 move |Query(query)| fixtures::get_fixtures(query, conn)
             }),
@@ -73,6 +97,7 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
         .route(
             "/search_fixtures",
             get({
+                info!("GET /search_fixtures");
                 let context = Arc::clone(&search_fixtures_context);
                 move |query: Query<HashMap<String, String>>| {
                     let keywords_str = query
@@ -87,6 +112,7 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
         .route(
             "/insert_lending",
             post({
+                info!("POST /insert_lending");
                 let conn = Arc::clone(&conn);
                 move |body| lending::insert_lending(body, conn)
             }),
@@ -94,6 +120,7 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
         .route(
             "/update_lending",
             post({
+                info!("POST /update_lending");
                 let conn = Arc::clone(&conn);
                 move |body| lending::update_lending(body, conn)
             }),
@@ -101,6 +128,7 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
         .route(
             "/returned_lending",
             post({
+                info!("POST /returned_lending");
                 let conn = Arc::clone(&conn);
                 move |query: Query<HashMap<String, String>>| {
                     let uuid_opt = query.0.get("id").and_then(|s| Uuid::parse_str(s).ok());
@@ -113,6 +141,7 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
         .route(
             "/get_lending_list",
             get({
+                info!("GET /get_lending_list");
                 let conn = Arc::clone(&conn);
                 move || lending::get_lending_list(conn)
             }),
@@ -120,6 +149,7 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
         .route(
             "/get_lending",
             get({
+                info!("GET /get_lending");
                 let conn = Arc::clone(&conn);
                 move |Query(query)| lending::get_one_lending(query, conn)
             }),
@@ -127,20 +157,15 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
         .route(
             "/get_is_lending",
             get({
+                info!("GET /get_is_lending");
                 let conn = Arc::clone(&conn);
                 move |Query(query)| lending::get_is_lending(query, conn)
             }),
         )
         .route(
-            "/get_fixtures_list",
-            get({
-                let conn = Arc::clone(&conn);
-                move |Query(query)| fixtures::get_fixtures_list(query, conn)
-            }),
-        )
-        .route(
             "/insert_spot",
             post({
+                info!("POST /insert_spot");
                 let conn = Arc::clone(&conn);
                 move |body| spot::insert_spot(body, conn)
             }),
@@ -148,6 +173,7 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
         .route(
             "/update_spot",
             post({
+                info!("POST /update_spot");
                 let conn = Arc::clone(&conn);
                 move |body| spot::update_spot(body, conn)
             }),
@@ -155,6 +181,7 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
         .route(
             "/get_spot",
             get({
+                info!("GET /get_spot");
                 let conn = Arc::clone(&conn);
                 move |query: Query<HashMap<String, String>>| {
                     let name = query.0.get("name").cloned();
@@ -165,6 +192,7 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
         .route(
             "/get_spot_list",
             get({
+                info!("GET /get_spot_list");
                 let conn = Arc::clone(&conn);
                 move || spot::get_spot_list(conn)
             }),
@@ -172,6 +200,7 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
         .route(
             "/insert_container",
             post({
+                info!("POST /insert_container");
                 let conn = Arc::clone(&conn);
                 move |body| container::insert_container(body, conn)
             }),

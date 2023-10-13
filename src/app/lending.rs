@@ -4,14 +4,22 @@ use chrono::{DateTime, Utc};
 use sqlx::{pool::Pool, postgres::Postgres};
 use std::collections::HashMap;
 use std::sync::Arc;
+use tracing::*;
 use uuid::Uuid;
 
 /// 備品情報の登録を行うエンドポイント
 /// - https://github.com/sohosai/qr-backend/issues/11
 pub async fn insert_lending(Json(lending): Json<Lending>, conn: Arc<Pool<Postgres>>) -> StatusCode {
-    match crate::database::insert_lending::insert_lending(&*conn, lending).await {
-        Ok(()) => StatusCode::ACCEPTED,
-        _ => StatusCode::BAD_REQUEST,
+    info!("Try insert lending: {lending:?}");
+    match crate::database::insert_lending::insert_lending(&*conn, lending.clone()).await {
+        Ok(()) => {
+            info!("Success insert lending[{}]", &lending.id);
+            StatusCode::ACCEPTED
+        }
+        Err(err) => {
+            error!("Failed insert lending[{}]: {err}", &lending.id);
+            StatusCode::BAD_REQUEST
+        }
     }
 }
 
@@ -21,46 +29,65 @@ pub async fn returned_lending(
     returned_at: DateTime<Utc>,
     conn: Arc<Pool<Postgres>>,
 ) -> StatusCode {
-    use crate::database::get_lending_list::*;
     use crate::database::get_one_fixtures::*;
     use crate::database::returned_lending::*;
     match id {
-        Some(id) => match returned_lending(&*conn, id, returned_at).await {
-            Ok(()) => StatusCode::ACCEPTED,
-            _ => StatusCode::BAD_REQUEST,
-        },
+        Some(id) => {
+            info!("Try returned lending with uuid[{}]", { id });
+            match returned_lending(&*conn, id, returned_at).await {
+                Ok(()) => {
+                    info!("Success returned lending with uuid[{}]", id);
+                    StatusCode::ACCEPTED
+                }
+                Err(err) => {
+                    error!("Failed retunred lending with uuid[{}]: {err}", id);
+                    StatusCode::BAD_REQUEST
+                }
+            }
+        }
         None => match qr_id {
             // QRのIDに該当する物品情報を検索する
-            Some(qr_id) => match get_one_fixtures(&*conn, IdType::QrId(qr_id)).await {
-                Ok(Some(fixtures)) => match get_lending_list(&*conn).await {
-                    Ok(list) => {
-                        for lending in list
-                            .iter()
-                            .filter(|lending| lending.fixtures_id == fixtures.id)
-                        {
-                            // 物品IDが一致する貸出情報に対して返却処理を行う
-                            // 一つでも失敗したらエラーコードを返す
-                            let id = lending.id;
-                            match returned_lending(&*conn, id, returned_at).await {
-                                Ok(()) => {}
-                                _ => return StatusCode::BAD_REQUEST,
+            Some(qr_id) => {
+                info!("Try returned lending with qr_id[{}]", qr_id);
+                match get_one_fixtures(&*conn, IdType::QrId(qr_id.clone())).await {
+                    Ok(Some(fixtures)) => {
+                        let id = fixtures.id;
+                        match returned_lending(&*conn, id, returned_at).await {
+                            Ok(()) => {
+                                info!("Success returned lending with qr_id[{}]", qr_id);
+                                StatusCode::ACCEPTED
+                            }
+                            Err(err) => {
+                                error!("Failed retunred lending with qr_id[{}]: {err}", qr_id);
+                                StatusCode::BAD_REQUEST
                             }
                         }
-                        StatusCode::ACCEPTED
                     }
-                    _ => StatusCode::BAD_REQUEST,
-                },
-                _ => StatusCode::BAD_REQUEST,
-            },
-            None => StatusCode::BAD_REQUEST,
+                    _ => {
+                        error!("Not found fixtures: {}", qr_id);
+                        StatusCode::BAD_REQUEST
+                    }
+                }
+            }
+            None => {
+                error!("Not found lending id");
+                StatusCode::BAD_REQUEST
+            }
         },
     }
 }
 
 pub async fn get_lending_list(conn: Arc<Pool<Postgres>>) -> Json<Option<Vec<Lending>>> {
+    info!("Try get lending list");
     match crate::database::get_lending_list::get_lending_list(&*conn).await {
-        Ok(v) => axum::Json(Some(v)),
-        _ => axum::Json(None),
+        Ok(v) => {
+            info!("Success get lending list");
+            axum::Json(Some(v))
+        }
+        Err(err) => {
+            error!("Failed get lending list: {err}");
+            axum::Json(None)
+        }
     }
 }
 
@@ -75,33 +102,60 @@ pub async fn get_one_lending(
         query.get("fixtures_qr_id"),
     ) {
         (Some(lending_id), _, _) => {
+            info!("Try get one lending info with lending_id[{lending_id}]");
             let uuid_opt = Uuid::parse_str(lending_id).ok();
             if let Some(uuid) = uuid_opt {
                 match get_one_lending(&*conn, IdType::LendingId(uuid)).await {
-                    Ok(v) => axum::Json(v),
-                    _ => axum::Json(None),
+                    Ok(v) => {
+                        info!("Success get lending with lending_id[{lending_id}]");
+                        axum::Json(v)
+                    }
+                    Err(err) => {
+                        error!("Failed get lending with lending_id[{lending_id}]: {err}");
+                        axum::Json(None)
+                    }
                 }
             } else {
+                error!("Break uuid: {lending_id}");
                 Json(None)
             }
         }
         (_, Some(fixtures_id), _) => {
+            info!("Try get one lending info with fixtures_id[{fixtures_id}]");
             let uuid_opt = Uuid::parse_str(fixtures_id).ok();
             if let Some(uuid) = uuid_opt {
                 match get_one_lending(&*conn, IdType::FixturesId(uuid)).await {
-                    Ok(v) => axum::Json(v),
-                    _ => axum::Json(None),
+                    Ok(v) => {
+                        info!("Success get lending with fixtures_id[{fixtures_id}]");
+                        axum::Json(v)
+                    }
+                    Err(err) => {
+                        error!("Failed get lending with fixtures_id[{fixtures_id}]: {err}");
+                        axum::Json(None)
+                    }
                 }
             } else {
+                error!("Break uuid: {fixtures_id}");
                 Json(None)
             }
         }
-        (_, _, Some(qr_id)) => match get_one_lending(&*conn, IdType::QrId(qr_id.to_string())).await
-        {
-            Ok(v) => axum::Json(v),
-            _ => axum::Json(None),
+        (_, _, Some(qr_id)) => match {
+            info!("Try get one lending info with fixtures_qr_id[{qr_id}]");
+            get_one_lending(&*conn, IdType::QrId(qr_id.to_string())).await
+        } {
+            Ok(v) => {
+                info!("Success get lending with fixtures_qr_id[{qr_id}]");
+                axum::Json(v)
+            }
+            Err(err) => {
+                error!("Failed get lending with fixtures_qr_id[{qr_id}]: {err}");
+                axum::Json(None)
+            }
         },
-        _ => Json(None),
+        _ => {
+            error!("Invalid query");
+            Json(None)
+        }
     }
 }
 
@@ -110,6 +164,7 @@ pub async fn get_is_lending(
     conn: Arc<Pool<Postgres>>,
 ) -> Json<bool> {
     use crate::database::get_one_lending::*;
+    info!("Check exist lending info");
     match (
         query.get("lending_id"),
         query.get("fixtures_id"),
@@ -123,6 +178,7 @@ pub async fn get_is_lending(
                     _ => axum::Json(false),
                 }
             } else {
+                error!("Break uuid: {lending_id}");
                 Json(false)
             }
         }
@@ -134,6 +190,7 @@ pub async fn get_is_lending(
                     _ => axum::Json(false),
                 }
             } else {
+                error!("Break uuid: {fixtures_id}");
                 Json(false)
             }
         }
@@ -142,14 +199,24 @@ pub async fn get_is_lending(
             Ok(Some(_)) => axum::Json(true),
             _ => axum::Json(false),
         },
-        _ => Json(false),
+        _ => {
+            error!("Invalid query");
+            Json(false)
+        }
     }
 }
 
 pub async fn update_lending(Json(lending): Json<Lending>, conn: Arc<Pool<Postgres>>) -> StatusCode {
-    match crate::database::update_lending::update_lending(&*conn, lending).await {
-        Ok(()) => StatusCode::ACCEPTED,
-        _ => StatusCode::BAD_REQUEST,
+    info!("Try update lending: {lending:?}");
+    match crate::database::update_lending::update_lending(&*conn, lending.clone()).await {
+        Ok(()) => {
+            info!("Success update lending[{}]", lending.id);
+            StatusCode::ACCEPTED
+        }
+        Err(err) => {
+            error!("Failed update lending[{}]: {err}", lending.id);
+            StatusCode::BAD_REQUEST
+        }
     }
 }
 
