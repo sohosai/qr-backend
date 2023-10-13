@@ -43,12 +43,8 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
     info!("Success generate DB connection pool");
 
     info!("Try generate search engine context for fixtures");
-    let search_fixtures_context = search_engine::SearchFixtures::new();
-    info!(
-        "Success generate search engine context for fixutes: {}",
-        search_fixtures_context.context.index
-    );
-    let search_fixtures_context = Arc::new(search_fixtures_context);
+    let search_fixtures_context = Arc::new(search_engine::SearchFixtures::new().await?);
+    info!("Success generate search engine context for fixtures");
 
     // migrateファイルを適用
     crate::database::migrate(&mut conn.acquire().await?).await?;

@@ -3,14 +3,15 @@ use anyhow::Result;
 use meilisearch_sdk::client::*;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use std::env;
+use tracing::*;
 use uuid::Uuid;
 
 /// 抽象化された検索コンテキスト
 #[derive(Clone)]
 pub struct Context {
     client: Client,
-    pub(crate) index: String,
-    pub(crate) primary_key: String,
+    index: String,
+    primary_key: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -21,14 +22,16 @@ pub struct SearchResult<T> {
 
 impl Context {
     /// コンテキストを新しく作成
-    pub fn new(index: &str, primary_key: &str) -> Self {
+    pub async fn new(index: &str, primary_key: &str) -> Result<Self> {
         let master_key = env::var("MEILI_MASTER_KEY").expect("MEILI_MASTER_KEY is not defined");
         let url = env::var("MEILI_URL").expect("MEILI_URL is not defined");
-        Context {
-            client: Client::new(url, Some(master_key)),
+        let client = Client::new(&url, Some(master_key));
+        info!("Create meilisearch client: {url} / {index}, {primary_key}");
+        Ok(Context {
+            client,
             index: index.to_string(),
             primary_key: primary_key.to_string(),
-        }
+        })
     }
 
     /// 情報を追加または更新
@@ -79,15 +82,15 @@ impl Context {
 
 /// 物品情報についての検索コンテキストなど
 pub struct SearchFixtures {
-    pub(crate) context: Context,
+    context: Context,
 }
 
 #[allow(clippy::new_without_default)]
 impl SearchFixtures {
-    pub fn new() -> Self {
-        SearchFixtures {
-            context: Context::new("fixtures", "id"),
-        }
+    pub async fn new() -> Result<Self> {
+        Ok(SearchFixtures {
+            context: Context::new("fixtures", "id").await?,
+        })
     }
     pub async fn add_or_replace(&self, lst: &[Fixtures]) -> Result<()> {
         self.context.add_or_replace_documents(lst).await
