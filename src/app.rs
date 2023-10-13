@@ -38,11 +38,17 @@ async fn init_logger() -> Result<()> {
 pub async fn app(bind: SocketAddr) -> Result<()> {
     init_logger().await?;
 
+    info!("Try generate DB connection pool");
     let conn = Arc::new(crate::database::create_pool().await?);
-    info!("DBのコネクションプール作成");
+    info!("Success generate DB connection pool");
 
-    let search_fixtures_context = Arc::new(search_engine::SearchFixtures::new());
-    info!("検索エンジンのcontext作成");
+    info!("Try generate search engine context for fixtures");
+    let search_fixtures_context = search_engine::SearchFixtures::new();
+    info!(
+        "Success generate search engine context for fixutes: {}",
+        search_fixtures_context.context.index
+    );
+    let search_fixtures_context = Arc::new(search_fixtures_context);
 
     // migrateファイルを適用
     crate::database::migrate(&mut conn.acquire().await?).await?;
