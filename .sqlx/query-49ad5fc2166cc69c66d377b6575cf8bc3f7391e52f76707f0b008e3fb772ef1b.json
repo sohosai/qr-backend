@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT * FROM lending WHERE id = $1",
+  "query": "SELECT * FROM lending WHERE fixtures_id = $1 AND returned_at IS NULL",
   "describe": {
     "columns": [
       {
@@ -66,5 +66,5 @@
       true
     ]
   },
-  "hash": "a42b78be9b97caf4a4dffac1596c49a35f4ffba63d749b45c1fc71a35677a837"
+  "hash": "49ad5fc2166cc69c66d377b6575cf8bc3f7391e52f76707f0b008e3fb772ef1b"
 }
