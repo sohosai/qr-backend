@@ -16,26 +16,33 @@ where
 {
     match id {
         IdType::LendingId(id) => {
-            let lending_opt = sqlx::query_as!(Lending, "SELECT * FROM lending WHERE id = $1", id)
-                .fetch_optional(conn)
-                .await
-                .context("Failed to get lending")?;
+            let lending_opt = sqlx::query_as!(
+                Lending,
+                "SELECT * FROM lending WHERE id = $1 AND returned_at IS NULL",
+                id
+            )
+            .fetch_optional(conn)
+            .await
+            .context("Failed to get lending")?;
 
             Ok(lending_opt)
         }
         IdType::FixturesId(id) => {
-            let lending_opt =
-                sqlx::query_as!(Lending, "SELECT * FROM lending WHERE fixtures_id = $1", id)
-                    .fetch_optional(conn)
-                    .await
-                    .context("Failed to get lending")?;
+            let lending_opt = sqlx::query_as!(
+                Lending,
+                "SELECT * FROM lending WHERE fixtures_id = $1 AND returned_at IS NULL",
+                id
+            )
+            .fetch_optional(conn)
+            .await
+            .context("Failed to get lending")?;
 
             Ok(lending_opt)
         }
         IdType::QrId(id) => {
             let lending_opt = sqlx::query_as!(
                 Lending,
-                "SELECT * FROM lending WHERE fixtures_qr_id = $1",
+                "SELECT * FROM lending WHERE fixtures_qr_id = $1 AND returned_at IS NULL",
                 id
             )
             .fetch_optional(conn)

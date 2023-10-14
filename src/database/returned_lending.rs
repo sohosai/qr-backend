@@ -22,6 +22,7 @@ where
 
 #[cfg(test)]
 mod tests {
+    use crate::database::get_one_lending::{get_one_lending, IdType};
     use crate::database::insert_lending::insert_lending;
     use crate::database::returned_lending::returned_lending;
     use chrono::Utc;
@@ -48,5 +49,8 @@ mod tests {
         let returned_at = Utc::now();
         let res = returned_lending(&pool, id, returned_at).await;
         assert!(res.is_ok());
+
+        let res = get_one_lending(&pool, IdType::FixturesId(fixtures_id)).await;
+        assert!(res.unwrap().is_none());
     }
 }
