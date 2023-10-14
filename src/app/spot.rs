@@ -76,6 +76,29 @@ pub async fn get_spot_list(conn: Arc<Pool<Postgres>>) -> Json<Option<Vec<Spot>>>
     }
 }
 
+/// 地点情報の削除を行うエンドポイント
+pub async fn delte_spot(name: Option<String>, conn: Arc<Pool<Postgres>>) -> StatusCode {
+    match name {
+        Some(name) => {
+            info!("Try delete spot: {name}");
+            match crate::database::delete_spot::delete_spot(&*conn, &name).await {
+                Ok(()) => {
+                    info!("Success delete spot[{name}]");
+                    StatusCode::OK
+                }
+                Err(err) => {
+                    error!("Failed delete spot[{name}]: {err}");
+                    StatusCode::BAD_REQUEST
+                }
+            }
+        }
+        None => {
+            error!("Not found spot name");
+            StatusCode::BAD_REQUEST
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use axum::{extract::Json, http::StatusCode};
