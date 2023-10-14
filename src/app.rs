@@ -207,7 +207,7 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
                 let conn = Arc::clone(&conn);
                 move |query: Query<HashMap<String, String>>| {
                     let name = query.0.get("name").cloned();
-                    spot::get_one_spot(name, conn)
+                    spot::delte_spot(name, conn)
                 }
             }),
         )
