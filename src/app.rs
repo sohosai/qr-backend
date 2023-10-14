@@ -6,6 +6,7 @@ use axum::{
     Router,
 };
 use chrono::Utc;
+use reqwest::header::CONTENT_TYPE;
 use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::sync::Arc;
@@ -221,6 +222,7 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
         .layer(
             CorsLayer::new()
                 .allow_methods([Method::GET, Method::POST])
+                .allow_headers([CONTENT_TYPE])
                 .allow_origin(Any),
         );
 
