@@ -221,7 +221,7 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
         )
         .layer(
             CorsLayer::new()
-                .allow_methods([Method::GET, Method::POST])
+                .allow_methods([Method::GET, Method::POST, Method::DELETE])
                 .allow_headers([CONTENT_TYPE])
                 .allow_origin(Any),
         );
