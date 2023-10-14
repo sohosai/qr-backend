@@ -2,14 +2,14 @@ use anyhow::{Context, Result};
 use chrono::{DateTime, Utc};
 use uuid::Uuid;
 
-/// 返却を行う
+/// 物品のIDを受け取って返却を行う
 pub async fn returned_lending<'a, E>(conn: E, id: Uuid, returned_at: DateTime<Utc>) -> Result<()>
 where
     E: sqlx::Executor<'a, Database = sqlx::Postgres>,
 {
     sqlx::query!(
         r#"
-    UPDATE lending SET returned_at=$1 WHERE id=$2"#,
+    UPDATE lending SET returned_at=$1 WHERE fixtures_id=$2"#,
         returned_at,
         id
     )
@@ -47,7 +47,7 @@ mod tests {
         assert!(res.is_ok());
 
         let returned_at = Utc::now();
-        let res = returned_lending(&pool, id, returned_at).await;
+        let res = returned_lending(&pool, fixtures_id, returned_at).await;
         assert!(res.is_ok());
 
         let res = get_one_lending(&pool, IdType::FixturesId(fixtures_id)).await;
