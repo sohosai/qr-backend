@@ -200,6 +200,17 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
             }),
         )
         .route(
+            "/delete_spot",
+            delete({
+                info!("DELETE /delete_spot");
+                let conn = Arc::clone(&conn);
+                move |query: Query<HashMap<String, String>>| {
+                    let name = query.0.get("name").cloned();
+                    spot::get_one_spot(name, conn)
+                }
+            }),
+        )
+        .route(
             "/insert_container",
             post({
                 info!("POST /insert_container");

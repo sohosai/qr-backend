@@ -21,11 +21,11 @@ mod tests {
 
     #[sqlx::test(migrations = "./migrations")]
     async fn test_insert_spot_sql(pool: Pool<Postgres>) {
-      let name = "test1";
+        let name = "test1";
         let info: Spot = serde_json::from_value(serde_json::json!({
-          name: name,
-          area: "area1",
-          building: "3C"
+          "name": name,
+          "area": "area1",
+          "building": "3C"
         }))
         .unwrap();
 

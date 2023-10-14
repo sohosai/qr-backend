@@ -15,6 +15,8 @@ use sqlx::{pool::Pool, postgres::PgPool, Postgres};
 
 /// 物品削除を行う関数を提供する
 pub mod delete_fixtures;
+/// 場所情報削除を行う関数を提供する
+pub mod delete_spot;
 /// 物品の一覧を取得する関数を提供する
 pub mod get_fixtures_list;
 /// 貸し出し中の物品の情報を取得する
