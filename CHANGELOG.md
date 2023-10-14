@@ -23,6 +23,6 @@
 
 
 
-[Unreleased]: /https://github.com/sohosai/qr-backend/compare/1.0.0...HEAD
-[1.0.0]: /https://github.com/sohosai/qr-backend/compare/b36d897...1.0.0
+[Unreleased]: https://github.com/sohosai/qr-backend/compare/1.0.0...HEAD
+[1.0.0]: https://github.com/sohosai/qr-backend/compare/b36d897...1.0.0
 
