@@ -230,7 +230,7 @@ impl From<std::string::String> for Area {
             "kasuga" => Area::Taigei,
             "ichinoya" => Area::Ichinoya,
             "hirasuna" => Area::Hirasuna,
-            "okioshi" => Area::Oikoshi,
+            "oikoshi" => Area::Oikoshi,
             "move" => Area::Move,
             _ => panic!("Undefined area: {item}"),
         }
