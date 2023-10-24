@@ -177,6 +177,8 @@ pub enum Area {
     CenterLibrary,
     /// 石の広場
     IshiSquare,
+    /// 大学会館
+    Kaikan,
     /// 医学エリア
     Igaku,
     /// 体育芸術エリア
@@ -189,6 +191,8 @@ pub enum Area {
     Hirasuna,
     /// 追越
     Oikoshi,
+    /// 人に付随するので動く
+    Move,
 }
 
 impl std::fmt::Display for Area {
@@ -199,12 +203,14 @@ impl std::fmt::Display for Area {
             Area::Area3 => write!(f, "area3")?,
             Area::CenterLibrary => write!(f, "center_library")?,
             Area::IshiSquare => write!(f, "ishi_square")?,
+            Area::Kaikan => write!(f, "kaikan")?,
             Area::Igaku => write!(f, "igaku")?,
             Area::Taigei => write!(f, "taigei")?,
             Area::Kasuga => write!(f, "kasuga")?,
             Area::Ichinoya => write!(f, "ichinoya")?,
             Area::Hirasuna => write!(f, "hirasuna")?,
             Area::Oikoshi => write!(f, "oikoshi")?,
+            Area::Move => write!(f, "move")?,
         };
         Ok(())
     }
@@ -218,12 +224,14 @@ impl From<std::string::String> for Area {
             "area3" => Area::Area3,
             "center_library" => Area::CenterLibrary,
             "ishi_square" => Area::IshiSquare,
+            "kaikan" => Area::Kaikan,
             "igaku" => Area::Igaku,
             "taigei" => Area::Taigei,
             "kasuga" => Area::Taigei,
             "ichinoya" => Area::Ichinoya,
             "hirasuna" => Area::Hirasuna,
             "okioshi" => Area::Oikoshi,
+            "move" => Area::Move,
             _ => panic!(),
         }
     }
