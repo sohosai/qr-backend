@@ -11,6 +11,7 @@ where
         building,
         floor,
         room,
+        note,
     } = info;
 
     sqlx::query!(
@@ -20,13 +21,15 @@ where
       area,
       building,
       floor,
-      room
-    ) VALUES ( $1, $2, $3, $4, $5 )"#,
+      room,
+      note
+    ) VALUES ( $1, $2, $3, $4, $5, $6 )"#,
         name,
         area.to_string(),
         building,
         floor.map(|u8| u8 as i32),
-        room
+        room,
+        note
     )
     .execute(conn)
     .await
@@ -49,6 +52,7 @@ mod tests {
             building: Some("3C".to_string()),
             floor: Some(2),
             room: Some("coinsラウンジ".to_string()),
+            note: None,
         };
         let res = insert_spot(&pool, info).await;
         assert!(res.is_ok());

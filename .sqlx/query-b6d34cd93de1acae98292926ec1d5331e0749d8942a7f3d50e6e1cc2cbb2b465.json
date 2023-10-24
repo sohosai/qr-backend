@@ -1,0 +1,19 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n    INSERT INTO spot (\n      name,\n      area,\n      building,\n      floor,\n      room,\n      note\n    ) VALUES ( $1, $2, $3, $4, $5, $6 )",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Text",
+        "Int4",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "b6d34cd93de1acae98292926ec1d5331e0749d8942a7f3d50e6e1cc2cbb2b465"
+}

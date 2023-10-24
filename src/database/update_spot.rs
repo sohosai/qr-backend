@@ -12,14 +12,16 @@ where
         building,
         floor,
         room,
+        note,
     } = new_info;
     sqlx::query!(
-        r#"UPDATE spot SET area=$2, building=$3, floor=$4, room=$5 WHERE name=$1"#,
+        r#"UPDATE spot SET area=$2, building=$3, floor=$4, room=$5, note=$6 WHERE name=$1"#,
         name,
         area.to_string(),
         building,
         floor.map(|i| i as i32),
-        room
+        room,
+        note
     )
     .execute(conn)
     .await
@@ -43,6 +45,7 @@ mod tests {
             building: Some("3C".to_string()),
             floor: Some(2),
             room: Some("coinsラウンジ".to_string()),
+            note: None,
         };
         let res = insert_spot(&pool, info).await;
         assert!(res.is_ok());
@@ -53,6 +56,7 @@ mod tests {
             building: Some("3C".to_string()),
             floor: Some(1),
             room: Some("coins計算機室".to_string()),
+            note: None,
         };
         let res = update_spot(&pool, new_info).await;
         assert!(res.is_ok());

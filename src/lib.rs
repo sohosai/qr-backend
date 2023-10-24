@@ -160,6 +160,8 @@ pub struct Spot {
     /// 部屋の番号や名前など。
     /// 建物ではないところで使う可能性もあるのでOption型。
     pub room: Option<String>,
+    /// 備考
+    pub note: Option<String>,
 }
 
 /// 大まかな範囲を与える区分。
