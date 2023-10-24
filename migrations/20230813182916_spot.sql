@@ -4,5 +4,6 @@ CREATE TABLE spot (
     area text NOT NULL,
     building text,
     floor int,
-    room text
+    room text,
+    note text
 );
