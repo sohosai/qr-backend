@@ -98,7 +98,7 @@ impl From<std::string::String> for QrColor {
             "yellow" => QrColor::Yellow,
             "purple" => QrColor::Purple,
             "pink" => QrColor::Pink,
-            _ => panic!(),
+            _ => panic!("Undefined qr_color: {item}"),
         }
     }
 }
@@ -136,7 +136,7 @@ impl From<std::string::String> for Stroge {
             "room101" => Stroge::Room101,
             "room102" => Stroge::Room102,
             "room206" => Stroge::Room206,
-            _ => panic!(),
+            _ => panic!("Undefined stroge: {item}"),
         }
     }
 }
@@ -232,7 +232,7 @@ impl From<std::string::String> for Area {
             "hirasuna" => Area::Hirasuna,
             "okioshi" => Area::Oikoshi,
             "move" => Area::Move,
-            _ => panic!(),
+            _ => panic!("Undefined area: {item}"),
         }
     }
 }
