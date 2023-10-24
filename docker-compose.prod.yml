@@ -37,7 +37,7 @@ services:
       - "postgres_data_dev:/var/lib/postgresql"
   meilisearch:
     container_name: meilisearch
-    image: getmeili/meilisearch:v1.4
+    image: getmeili/meilisearch:prototype-japanese-6
     restart: always
     working_dir: /app
     ports:
