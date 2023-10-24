@@ -6,6 +6,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- エリア情報に大学会館と動く時の2種類を追加 ([#115], [#119])
+
 ### Changed
 
 - Meilisearchのdocker imageを日本語用のものにした [#117, #118]
