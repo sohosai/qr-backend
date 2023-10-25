@@ -1,5 +1,7 @@
-use crate::Fixtures;
-use anyhow::{Context, Result};
+use crate::{
+    error_handling::{QrError, Result},
+    Fixtures,
+};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -19,7 +21,7 @@ where
                 sqlx::query_as!(Fixtures, "SELECT * FROM fixtures WHERE id = $1", id)
                     .fetch_optional(conn)
                     .await
-                    .context("Failed to get fixtures")?;
+                    .map_err(|_| QrError::DatabaseGet("fixtures".to_string()))?;
 
             Ok(fixtures_opt)
         }
@@ -28,7 +30,7 @@ where
                 sqlx::query_as!(Fixtures, "SELECT * FROM fixtures WHERE qr_id = $1", id)
                     .fetch_optional(conn)
                     .await
-                    .context("Failed to get fixtures")?;
+                    .map_err(|_| QrError::DatabaseGet("fixtures".to_string()))?;
 
             Ok(fixtures_opt)
         }

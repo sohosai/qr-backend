@@ -1,5 +1,7 @@
-use crate::Spot;
-use anyhow::{Context, Result};
+use crate::{
+    error_handling::{QrError, Result},
+    Spot,
+};
 
 pub async fn get_one_spot<'a, E>(conn: E, name: &str) -> Result<Option<Spot>>
 where
@@ -8,7 +10,7 @@ where
     let spot_opt = sqlx::query_as!(Spot, "SELECT * FROM spot WHERE name = $1", name)
         .fetch_optional(conn)
         .await
-        .context("Failed to get fixtures")?;
+        .map_err(|_| QrError::DatabaseGet("spot".to_string()))?;
 
     Ok(spot_opt)
 }
@@ -26,6 +28,7 @@ mod tests {
           "name": "test1",
           "area": "area3",
           "building": "3C棟",
+          "note": null,
         }))
         .unwrap();
 

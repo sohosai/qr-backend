@@ -1,5 +1,7 @@
-use crate::Lending;
-use anyhow::{Context, Result};
+use crate::{
+    error_handling::{QrError, Result},
+    Lending,
+};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -23,7 +25,7 @@ where
             )
             .fetch_optional(conn)
             .await
-            .context("Failed to get lending")?;
+            .map_err(|_| QrError::DatabaseGet("lending".to_string()))?;
 
             Ok(lending_opt)
         }
@@ -35,7 +37,7 @@ where
             )
             .fetch_optional(conn)
             .await
-            .context("Failed to get lending")?;
+            .map_err(|_| QrError::DatabaseGet("lending".to_string()))?;
 
             Ok(lending_opt)
         }
@@ -47,7 +49,7 @@ where
             )
             .fetch_optional(conn)
             .await
-            .context("Failed to get lending")?;
+            .map_err(|_| QrError::DatabaseGet("lending".to_string()))?;
 
             Ok(lending_opt)
         }

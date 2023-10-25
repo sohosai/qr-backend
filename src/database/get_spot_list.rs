@@ -1,5 +1,7 @@
-use crate::Spot;
-use anyhow::{Context, Result};
+use crate::{
+    error_handling::{QrError, Result},
+    Spot,
+};
 
 pub async fn get_spot_list<'a, E>(conn: E) -> Result<Vec<Spot>>
 where
@@ -8,7 +10,7 @@ where
     let spot_opt = sqlx::query_as!(Spot, "SELECT * FROM spot")
         .fetch_all(conn)
         .await
-        .context("Failed to get fixtures")?;
+        .map_err(|_| QrError::DatabaseGet("spot".to_string()))?;
 
     Ok(spot_opt)
 }

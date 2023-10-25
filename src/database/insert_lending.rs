@@ -1,6 +1,8 @@
-use crate::database::get_one_lending::*;
-use crate::Lending;
-use anyhow::{anyhow, Context, Result};
+use crate::{
+    database::get_one_lending::*,
+    error_handling::{QrError, Result},
+    Lending,
+};
 
 /// 備品登録をする
 pub async fn insert_lending<'a, E>(conn: E, info: Lending) -> Result<()>
@@ -53,9 +55,9 @@ where
         )
         .execute(conn)
         .await
-        .context("Failed to insert to fixtures")?;
+        .map_err(|_| QrError::DatabaseUpdate("lending".to_string()))?;
     } else {
-        return Err(anyhow!("Failed to insert to fixtures"));
+        return Err(QrError::DatabaseUpdate("spot".to_string()));
     }
     Ok(())
 }

@@ -1,4 +1,5 @@
-use anyhow::{Context, Result};
+use crate::error_handling::{QrError, Result};
+
 pub async fn delete_spot<'a, E>(conn: E, name: &str) -> Result<()>
 where
     E: sqlx::Executor<'a, Database = sqlx::Postgres>,
@@ -6,7 +7,7 @@ where
     sqlx::query!("DELETE FROM spot WHERE name = $1", name)
         .execute(conn)
         .await
-        .context("Failed to delete spot")?;
+        .map_err(|_| QrError::DatabaseDelete("spot".to_string()))?;
 
     Ok(())
 }

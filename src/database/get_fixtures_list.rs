@@ -1,5 +1,7 @@
-use crate::{Fixtures, Stroge};
-use anyhow::{Context, Result};
+use crate::{
+    error_handling::{QrError, Result},
+    Fixtures, Stroge,
+};
 use uuid::Uuid;
 
 /// 検索条件
@@ -24,7 +26,7 @@ where
                 sqlx::query_as!(Fixtures, "SELECT * FROM fixtures WHERE id = $1", id)
                     .fetch_all(conn)
                     .await
-                    .context("Failed to get fixtures")?;
+                    .map_err(|_| QrError::DatabaseGet("fixtures".to_string()))?;
             Ok(fixtures_lst)
         }
         SelectInfo::QrId(id) => {
@@ -32,7 +34,7 @@ where
                 sqlx::query_as!(Fixtures, "SELECT * FROM fixtures WHERE qr_id = $1", id)
                     .fetch_all(conn)
                     .await
-                    .context("Failed to get fixtures")?;
+                    .map_err(|_| QrError::DatabaseGet("fixtures".to_string()))?;
             Ok(fixtures_lst)
         }
         SelectInfo::Name(name) => {
@@ -40,7 +42,7 @@ where
                 sqlx::query_as!(Fixtures, "SELECT * FROM fixtures WHERE name LIKE $1", name)
                     .fetch_all(conn)
                     .await
-                    .context("Failed to get fixtures")?;
+                    .map_err(|_| QrError::DatabaseGet("fixtures".to_string()))?;
             Ok(fixtures_lst)
         }
         SelectInfo::Description(text) => {
@@ -51,7 +53,7 @@ where
             )
             .fetch_all(conn)
             .await
-            .context("Failed to get fixtures")?;
+            .map_err(|_| QrError::DatabaseGet("fixtures".to_string()))?;
             Ok(fixtures_lst)
         }
         SelectInfo::Storage(storage) => {
@@ -62,7 +64,7 @@ where
             )
             .fetch_all(conn)
             .await
-            .context("Failed to get fixtures")?;
+            .map_err(|_| QrError::DatabaseGet("fixtures".to_string()))?;
             Ok(fixtures_lst)
         }
         SelectInfo::ParentId(id) => {
@@ -70,7 +72,7 @@ where
                 sqlx::query_as!(Fixtures, "SELECT * FROM fixtures WHERE parent_id = $1", id)
                     .fetch_all(conn)
                     .await
-                    .context("Failed to get fixtures")?;
+                    .map_err(|_| QrError::DatabaseGet("fixtures".to_string()))?;
             Ok(fixtures_lst)
         }
     }
