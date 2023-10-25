@@ -22,6 +22,16 @@ pub enum QrError {
     DatabaseGet(String),
     #[error("Couldn't found {} query in the url", .0)]
     UrlQuery(String),
+    #[error("Failed to build the Tokio Runtime")]
+    TokioRuntime,
+    #[error("Failed to run migrations")]
+    Migrations,
+    #[error("Failed to connection pool")]
+    ConnectionPool,
+    #[error("Failed to set logging confing")]
+    LoggingConfig,
+    #[error("Failed to serve app")]
+    Serve,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -69,6 +79,11 @@ where
                 DatabaseDelete(_) => (StatusCode::INTERNAL_SERVER_ERROR, "DatabaseDelete"),
                 DatabaseGet(_) => (StatusCode::INTERNAL_SERVER_ERROR, "DatabaseGet"),
                 UrlQuery(_) => (StatusCode::BAD_REQUEST, "UrlQuery"),
+                TokioRuntime => (StatusCode::INTERNAL_SERVER_ERROR, "TokioRutime"),
+                ConnectionPool => (StatusCode::INTERNAL_SERVER_ERROR, "ConnectionPool"),
+                Migrations => (StatusCode::INTERNAL_SERVER_ERROR, "Migrations"),
+                LoggingConfig => (StatusCode::INTERNAL_SERVER_ERROR, "LoggingConfing"),
+                Serve => (StatusCode::INTERNAL_SERVER_ERROR, "Serve"),
             };
             (
                 code,

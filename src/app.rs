@@ -1,4 +1,4 @@
-use anyhow::Result;
+use crate::error_handling::{QrError, Result};
 use axum::{
     extract::Query,
     http::Method,
@@ -30,7 +30,7 @@ async fn init_logger() -> Result<()> {
     let subscriber = tracing_subscriber::fmt()
         .with_max_level(tracing::Level::INFO)
         .finish();
-    tracing::subscriber::set_global_default(subscriber)?;
+    tracing::subscriber::set_global_default(subscriber).map_err(|_| QrError::LoggingConfig)?;
     Ok(())
 }
 
@@ -48,7 +48,8 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
     info!("Success generate search engine context for fixtures");
 
     // migrateファイルを適用
-    crate::database::migrate(&mut conn.acquire().await?).await?;
+    crate::database::migrate(&mut conn.acquire().await.map_err(|_| QrError::ConnectionPool)?)
+        .await?;
 
     // pathと関数の実体の紐づけ
     let app = Router::new()
@@ -229,7 +230,8 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
     // サーバーの実行
     axum::Server::bind(&bind)
         .serve(app.into_make_service())
-        .await?;
+        .await
+        .map_err(|_| QrError::Serve)?;
 
     Ok(())
 }

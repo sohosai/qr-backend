@@ -9,8 +9,7 @@
 //!
 //! PostgresのURLは`DATABASE_URL`に設定する。
 //!
-
-use anyhow::{Context, Result};
+use crate::error_handling::{QrError, Result};
 use sqlx::{pool::Pool, postgres::PgPool, Postgres};
 
 /// 物品削除を行う関数を提供する
@@ -55,14 +54,16 @@ where
     sqlx::migrate!("./migrations")
         .run(conn)
         .await
-        .context("Failed to run migrations")
+        .map_err(|_| QrError::Migrations)
 }
 
 /// poolを生成する
 pub async fn create_pool() -> Result<Pool<Postgres>> {
-    let database_url =
-        std::env::var("DATABASE_URL").context("Environment variable not set: DATABASE_URL")?;
-    let conn = PgPool::connect(&database_url).await?;
+    let database_url = std::env::var("DATABASE_URL")
+        .map_err(|_| QrError::Environment("DATABASE_URL".to_string()))?;
+    let conn = PgPool::connect(&database_url)
+        .await
+        .map_err(|_| QrError::ConnectionPool)?;
 
     Ok(conn)
 }
