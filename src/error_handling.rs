@@ -18,6 +18,8 @@ pub enum QrError {
     DatabaseUpdate(String),
     #[error("Couldn't delete {} from database", .0)]
     DatabaseDelete(String),
+    #[error("Couldn't get {} from database", .0)]
+    DatabaseGet(String),
     #[error("Couldn't found {} query in the url", .0)]
     UrlQuery(String),
 }
@@ -65,6 +67,7 @@ where
                 DatabaseAdd(_) => (StatusCode::INTERNAL_SERVER_ERROR, "DatabaseAdd"),
                 DatabaseUpdate(_) => (StatusCode::INTERNAL_SERVER_ERROR, "DatabaseUpdate"),
                 DatabaseDelete(_) => (StatusCode::INTERNAL_SERVER_ERROR, "DatabaseDelete"),
+                DatabaseGet(_) => (StatusCode::INTERNAL_SERVER_ERROR, "DatabaseGet"),
                 UrlQuery(_) => (StatusCode::BAD_REQUEST, "UrlQuery"),
             };
             (
