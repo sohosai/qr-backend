@@ -6,12 +6,18 @@ use thiserror::Error;
 pub enum QrError {
     #[error("Couldn't found {} on environment", .0)]
     Environment(String),
-    #[error("Couldn't add/replace documents to meilisearch")]
-    MeilisearchAddOrReplaceDocuments,
-    #[error("Couldn't delete documents to meilisearch")]
-    MeilisearchDeleteDocuments,
-    #[error("Couldn't delete documents to meilisearch")]
-    MeilisearchSearchDocuments,
+    #[error("Couldn't add/replace {} to search engine", .0)]
+    SearchEngineAddOrReplace(String),
+    #[error("Couldn't delete {} from search engine", .0)]
+    SearchEngineDelete(String),
+    #[error("Couldn't search {} from search engine", .0)]
+    SearchEngineSearch(String),
+    #[error("Couldn't add {} to database", .0)]
+    DatabaseAdd(String),
+    #[error("Couldn't update {} to database", .0)]
+    DatabaseUpdate(String),
+    #[error("Couldn't delete {} from database", .0)]
+    DatabaseDelete(String),
     #[error("Couldn't found {} query in the url", .0)]
     UrlQuery(String),
 }
@@ -50,18 +56,15 @@ where
             use QrError::*;
             let (code, error_type) = match e {
                 Environment(_) => (StatusCode::SERVICE_UNAVAILABLE, "CouldNotFoundEnv"),
-                MeilisearchAddOrReplaceDocuments => (
+                SearchEngineAddOrReplace(_) => (
                     StatusCode::INTERNAL_SERVER_ERROR,
-                    "MeilisearchAddOrReplaceDocuments",
+                    "SearchEngineAddOrReplace",
                 ),
-                MeilisearchDeleteDocuments => (
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    "MeilisearchDeleteDocuments",
-                ),
-                MeilisearchSearchDocuments => (
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    "MeilisearchSearchDocuments",
-                ),
+                SearchEngineDelete(_) => (StatusCode::INTERNAL_SERVER_ERROR, "SearchEngineDelete"),
+                SearchEngineSearch(_) => (StatusCode::INTERNAL_SERVER_ERROR, "SearchEngineSearch"),
+                DatabaseAdd(_) => (StatusCode::INTERNAL_SERVER_ERROR, "DatabaseAdd"),
+                DatabaseUpdate(_) => (StatusCode::INTERNAL_SERVER_ERROR, "DatabaseUpdate"),
+                DatabaseDelete(_) => (StatusCode::INTERNAL_SERVER_ERROR, "DatabaseDelete"),
                 UrlQuery(_) => (StatusCode::BAD_REQUEST, "UrlQuery"),
             };
             (
