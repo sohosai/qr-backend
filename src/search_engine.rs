@@ -1,5 +1,7 @@
-use crate::Fixtures;
-use anyhow::Result;
+use crate::{
+    error_handling::{QrError, Result},
+    Fixtures,
+};
 use meilisearch_sdk::client::*;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use std::env;
@@ -23,8 +25,10 @@ pub struct SearchResult<T> {
 impl Context {
     /// コンテキストを新しく作成
     pub async fn new(index: &str, primary_key: &str) -> Result<Self> {
-        let master_key = env::var("MEILI_MASTER_KEY").expect("MEILI_MASTER_KEY is not defined");
-        let url = env::var("MEILI_URL").expect("MEILI_URL is not defined");
+        let master_key = env::var("MEILI_MASTER_KEY")
+            .map_err(|_| QrError::Environment("MEILI_MASTER_KEY".to_string()))?;
+        let url =
+            env::var("MEILI_URL").map_err(|_| QrError::Environment("MEILI_URL".to_string()))?;
         let client = Client::new(&url, Some(master_key));
         info!("Create meilisearch client: {url} / {index}, {primary_key}");
         Ok(Context {
@@ -40,8 +44,12 @@ impl Context {
         let index = client.index(&self.index);
         let task = index
             .add_documents(documents, Some(&self.primary_key))
-            .await?;
-        client.wait_for_task(task, None, None).await?;
+            .await
+            .map_err(|_| QrError::SearchEngineAddOrReplace(self.index.clone()))?;
+        client
+            .wait_for_task(task, None, None)
+            .await
+            .map_err(|_| QrError::SearchEngineAddOrReplace(self.index.clone()))?;
         Ok(())
     }
 
@@ -52,8 +60,14 @@ impl Context {
     {
         let client = &self.client;
         let index = client.index(&self.index);
-        let task = index.delete_documents(keys).await?;
-        client.wait_for_task(task, None, None).await?;
+        let task = index
+            .delete_documents(keys)
+            .await
+            .map_err(|_| QrError::SearchEngineDelete(self.index.clone()))?;
+        client
+            .wait_for_task(task, None, None)
+            .await
+            .map_err(|_| QrError::SearchEngineDelete(self.index.clone()))?;
         Ok(())
     }
 
@@ -68,7 +82,8 @@ impl Context {
             .with_query(keyword)
             .with_limit(1000)
             .execute::<T>()
-            .await?
+            .await
+            .map_err(|_| QrError::SearchEngineSearch(self.index.clone()))?
             .hits
             .iter()
             .map(|res| SearchResult {
