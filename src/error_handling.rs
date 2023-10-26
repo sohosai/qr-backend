@@ -1,6 +1,7 @@
 use axum::{extract::Json, http::StatusCode};
 use serde::Serialize;
 use thiserror::Error;
+use tracing::*;
 
 #[derive(Debug, Clone, Error)]
 pub enum QrError {
@@ -22,6 +23,12 @@ pub enum QrError {
     DatabaseGet(String),
     #[error("Couldn't found {} query in the url", .0)]
     UrlQuery(String),
+    #[error("{} is broken UUID", .0)]
+    BrokenUuid(String),
+    // 外部から投げられたidなどが間違っていて
+    // データが見つけられなかった状況
+    #[error("Couldn't find {} from database", .0)]
+    DatabaseNotFound(String),
     #[error("Failed to build the Tokio Runtime")]
     TokioRuntime,
     #[error("Failed to run migrations")]
@@ -47,9 +54,9 @@ where
 
 pub type Result<T> = std::result::Result<T, QrError>;
 
-type ReturnData<T> = (StatusCode, Json<Msg<T>>);
+pub type ReturnData<T> = (StatusCode, Json<Msg<T>>);
 
-pub fn result_to_handler<T>(res: Result<T>) -> ReturnData<T>
+pub async fn result_to_handler<T>(res: &Result<T>) -> ReturnData<T>
 where
     T: Serialize + Clone,
 {
@@ -58,7 +65,7 @@ where
             StatusCode::OK,
             Json(Msg {
                 ok: true,
-                data: Some(t),
+                data: Some(t.clone()),
                 error_type: None,
                 error_message: None,
             }),
@@ -79,6 +86,8 @@ where
                 DatabaseDelete(_) => (StatusCode::INTERNAL_SERVER_ERROR, "DatabaseDelete"),
                 DatabaseGet(_) => (StatusCode::INTERNAL_SERVER_ERROR, "DatabaseGet"),
                 UrlQuery(_) => (StatusCode::BAD_REQUEST, "UrlQuery"),
+                BrokenUuid(_) => (StatusCode::BAD_REQUEST, "BrokenUuid"),
+                DatabaseNotFound(_) => (StatusCode::BAD_REQUEST, "DatabaseNotFound"),
                 TokioRuntime => (StatusCode::INTERNAL_SERVER_ERROR, "TokioRutime"),
                 ConnectionPool => (StatusCode::INTERNAL_SERVER_ERROR, "ConnectionPool"),
                 Migrations => (StatusCode::INTERNAL_SERVER_ERROR, "Migrations"),
@@ -96,4 +105,31 @@ where
             )
         }
     }
+}
+
+pub async fn result_to_handler_with_log<S, F, T>(
+    success_msg: S,
+    failed_msg: F,
+    res: &Result<T>,
+) -> ReturnData<T>
+where
+    S: Fn(&String) -> Option<String>,
+    F: Fn(&String) -> Option<String>,
+    T: Serialize + Clone,
+{
+    match res.clone() {
+        Ok(s) => {
+            let s = success_msg(&serde_json::to_string(&s).unwrap());
+            if let Some(s) = s {
+                info!("{}", s)
+            }
+        }
+        Err(e) => {
+            let s = failed_msg(&e.to_string());
+            if let Some(s) = s {
+                error!("{}", s)
+            }
+        }
+    }
+    result_to_handler(res).await
 }
