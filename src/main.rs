@@ -1,5 +1,7 @@
-use anyhow::{Context, Result};
-use qr_backend::app;
+use qr_backend::{
+    app,
+    error_handling::{QrError, Result},
+};
 use std::net::SocketAddr;
 use structopt::StructOpt;
 use tokio::runtime;
@@ -23,12 +25,11 @@ fn main() -> Result<()> {
         builder.worker_threads(j);
     }
 
-    let runtime = builder
-        .build()
-        .context("Failed to build the Tokio Runtime")?;
+    let runtime = builder.build().map_err(|_| QrError::TokioRuntime)?;
 
     // 指定したスレッド数でサーバーを実行する
-    runtime.block_on(app::app(opt.bind))?;
-
+    runtime
+        .block_on(app::app(opt.bind))
+        .map_err(|_| QrError::TokioRuntime)?;
     Ok(())
 }

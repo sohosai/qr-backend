@@ -1,129 +1,91 @@
-use crate::Spot;
-use axum::{extract::Json, http::StatusCode};
+use crate::{
+    error_handling::{result_to_handler_with_log, QrError, ReturnData},
+    Spot,
+};
+use axum::extract::Json;
 use sqlx::{pool::Pool, postgres::Postgres};
+use std::collections::HashMap;
 use std::sync::Arc;
 use tracing::*;
 
 /// 地点情報の登録を行うエンドポイント
-pub async fn insert_spot(Json(spot): Json<Spot>, conn: Arc<Pool<Postgres>>) -> StatusCode {
+pub async fn insert_spot(Json(spot): Json<Spot>, conn: Arc<Pool<Postgres>>) -> ReturnData<()> {
     info!("Try insert spot: {spot:?}");
-    match crate::database::insert_spot::insert_spot(&*conn, spot.clone()).await {
-        Ok(()) => {
-            info!("Success insert spot[{}]", &spot.name);
-            StatusCode::ACCEPTED
-        }
-        Err(err) => {
-            error!("Failed insert spot[{}]: {err}", &spot.name);
-            StatusCode::BAD_REQUEST
-        }
-    }
+    let res = crate::database::insert_spot::insert_spot(&*conn, spot.clone()).await;
+    result_to_handler_with_log(
+        |_| Some(format!("Success insert spot[{}]", &spot.name)),
+        |e| Some(format!("{e} spot[{}]", &spot.name)),
+        &res,
+    )
+    .await
 }
 
 /// 地点情報の更新を行うエンドポイント
-pub async fn update_spot(Json(spot): Json<Spot>, conn: Arc<Pool<Postgres>>) -> StatusCode {
+pub async fn update_spot(Json(spot): Json<Spot>, conn: Arc<Pool<Postgres>>) -> ReturnData<()> {
     info!("Try update spot: {spot:?}");
-    match crate::database::update_spot::update_spot(&*conn, spot.clone()).await {
-        Ok(()) => {
-            info!("Success update spot[{}]", &spot.name);
-            StatusCode::ACCEPTED
-        }
-        Err(err) => {
-            error!("Failed update spot[{}]: {err}", &spot.name);
-            StatusCode::BAD_REQUEST
-        }
-    }
+    let res = crate::database::update_spot::update_spot(&*conn, spot.clone()).await;
+    result_to_handler_with_log(
+        |_| Some(format!("Success update spot[{}]", &spot.name)),
+        |e| Some(format!("{e} spot[{}]", &spot.name)),
+        &res,
+    )
+    .await
 }
 
 /// 地点情報の取得を行うエンドポイント
-pub async fn get_one_spot(name: Option<String>, conn: Arc<Pool<Postgres>>) -> Json<Option<Spot>> {
-    match name {
+pub async fn get_one_spot(
+    query: HashMap<String, String>,
+    conn: Arc<Pool<Postgres>>,
+) -> ReturnData<Spot> {
+    match query.get("name") {
         Some(name) => {
             info!("Try get one spot info: {name}");
-            match crate::database::get_one_spot::get_one_spot(&*conn, &name).await {
-                Ok(spot) => {
-                    if spot.is_some() {
-                        info!("Success get spot with name[{}]", &name);
-                    } else {
-                        info!("Not found spot[{}]", &name);
-                    }
-                    Json(spot)
-                }
-                Err(err) => {
-                    error!("Failed get spot[{}]: {err}", &name);
-                    Json(None)
-                }
-            }
+            let res = crate::database::get_one_spot::get_one_spot(&*conn, name).await;
+            result_to_handler_with_log(
+                |_| Some(format!("Success get spot with name[{name}]")),
+                |e| Some(format!("{e} spot[{name}]")),
+                &res,
+            )
+            .await
         }
         None => {
-            error!("Not found spot name");
-            Json(None)
+            let err = Err(QrError::UrlQuery("name".to_string()));
+            result_to_handler_with_log(|_| None, |e| Some(e.to_string()), &err).await
         }
     }
 }
 
 /// 地点情報一覧の取得を行うエンドポイント
-pub async fn get_spot_list(conn: Arc<Pool<Postgres>>) -> Json<Option<Vec<Spot>>> {
+pub async fn get_spot_list(conn: Arc<Pool<Postgres>>) -> ReturnData<Vec<Spot>> {
     info!("Try get spot list");
-    match crate::database::get_spot_list::get_spot_list(&*conn).await {
-        Ok(spot) => {
-            info!("Success get spot list");
-            Json(Some(spot))
-        }
-        Err(err) => {
-            error!("Failed get spot list: {err}");
-            Json(None)
-        }
-    }
+    let res = crate::database::get_spot_list::get_spot_list(&*conn).await;
+    result_to_handler_with_log(
+        |_| Some("Success get spot list".to_string()),
+        |e| Some(e.to_string()),
+        &res,
+    )
+    .await
 }
 
 /// 地点情報の削除を行うエンドポイント
-pub async fn delte_spot(name: Option<String>, conn: Arc<Pool<Postgres>>) -> StatusCode {
-    match name {
+pub async fn delte_spot(
+    query: HashMap<String, String>,
+    conn: Arc<Pool<Postgres>>,
+) -> ReturnData<()> {
+    match query.get("name") {
         Some(name) => {
-            info!("Try delete spot: {name}");
-            match crate::database::delete_spot::delete_spot(&*conn, &name).await {
-                Ok(()) => {
-                    info!("Success delete spot[{name}]");
-                    StatusCode::OK
-                }
-                Err(err) => {
-                    error!("Failed delete spot[{name}]: {err}");
-                    StatusCode::BAD_REQUEST
-                }
-            }
+            info!("Try get one spot info: {name}");
+            let res = crate::database::delete_spot::delete_spot(&*conn, name).await;
+            result_to_handler_with_log(
+                |_| Some(format!("Success delete spot[{name}]")),
+                |e| Some(format!("{e} spot[{name}]")),
+                &res,
+            )
+            .await
         }
         None => {
-            error!("Not found spot name");
-            StatusCode::BAD_REQUEST
+            let err = Err(QrError::UrlQuery("name".to_string()));
+            result_to_handler_with_log(|_| None, |e| Some(e.to_string()), &err).await
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use axum::{extract::Json, http::StatusCode};
-    use serde_json::json;
-    use sqlx::{pool::Pool, Postgres};
-    use std::sync::Arc;
-
-    use crate::app::spot::insert_spot;
-
-    #[sqlx::test(migrations = "./migrations")]
-    async fn test_insert_spot(pool: Pool<Postgres>) {
-        let conn = Arc::new(pool);
-        let status_code = insert_spot(
-            Json(
-                serde_json::from_value(json!({
-                    "name": "test",
-                    "area": "area1",
-                    "building": "3C",
-                    "floor": 2,
-                }))
-                .unwrap(),
-            ),
-            conn,
-        )
-        .await;
-        assert_eq!(status_code, StatusCode::ACCEPTED)
     }
 }

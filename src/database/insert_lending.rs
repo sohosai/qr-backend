@@ -1,6 +1,8 @@
-use crate::database::get_one_lending::*;
-use crate::Lending;
-use anyhow::{anyhow, Context, Result};
+use crate::{
+    database::get_one_lending::*,
+    error_handling::{QrError, Result},
+    Lending,
+};
 
 /// 備品登録をする
 pub async fn insert_lending<'a, E>(conn: E, info: Lending) -> Result<()>
@@ -21,11 +23,11 @@ where
 
     // 物品IDとQR IDを元に二重貸し出しにならないかを確認する
     let is_lending1 = get_one_lending(conn.clone(), IdType::FixturesId(fixtures_id))
-        .await?
-        .is_some();
+        .await
+        .is_ok();
     let is_lending2 = get_one_lending(conn.clone(), IdType::QrId(fixtures_qr_id.clone()))
-        .await?
-        .is_some();
+        .await
+        .is_ok();
 
     if !is_lending1 && !is_lending2 {
         sqlx::query!(
@@ -53,9 +55,9 @@ where
         )
         .execute(conn)
         .await
-        .context("Failed to insert to fixtures")?;
+        .map_err(|_| QrError::DatabaseUpdate("lending".to_string()))?;
     } else {
-        return Err(anyhow!("Failed to insert to fixtures"));
+        return Err(QrError::DatabaseUpdate("spot".to_string()));
     }
     Ok(())
 }

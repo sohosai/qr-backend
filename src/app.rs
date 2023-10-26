@@ -1,4 +1,4 @@
-use anyhow::Result;
+use crate::error_handling::{QrError, Result};
 use axum::{
     extract::Query,
     http::Method,
@@ -12,7 +12,6 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 use tower_http::cors::{Any, CorsLayer};
 use tracing::*;
-use uuid::Uuid;
 
 use crate::search_engine;
 
@@ -30,7 +29,7 @@ async fn init_logger() -> Result<()> {
     let subscriber = tracing_subscriber::fmt()
         .with_max_level(tracing::Level::INFO)
         .finish();
-    tracing::subscriber::set_global_default(subscriber)?;
+    tracing::subscriber::set_global_default(subscriber).map_err(|_| QrError::LoggingConfig)?;
     Ok(())
 }
 
@@ -48,7 +47,8 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
     info!("Success generate search engine context for fixtures");
 
     // migrateファイルを適用
-    crate::database::migrate(&mut conn.acquire().await?).await?;
+    crate::database::migrate(&mut conn.acquire().await.map_err(|_| QrError::ConnectionPool)?)
+        .await?;
 
     // pathと関数の実体の紐づけ
     let app = Router::new()
@@ -83,10 +83,7 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
                 info!("DELETE /delete_fixtures");
                 let conn = Arc::clone(&conn);
                 let context = Arc::clone(&search_fixtures_context);
-                move |query: Query<HashMap<String, String>>| {
-                    let uuid_opt = query.0.get("id").and_then(|s| Uuid::parse_str(s).ok());
-                    fixtures::delete_fixtures(uuid_opt, conn, context)
-                }
+                move |Query(query)| fixtures::delete_fixtures(query, conn, context)
             }),
         )
         .route(
@@ -133,11 +130,9 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
             post({
                 info!("POST /returned_lending");
                 let conn = Arc::clone(&conn);
-                move |query: Query<HashMap<String, String>>| {
-                    let uuid_opt = query.0.get("id").and_then(|s| Uuid::parse_str(s).ok());
-                    let qr_id_opt = query.0.get("qr_id").cloned();
+                move |Query(query)| {
                     let now = Utc::now();
-                    lending::returned_lending(uuid_opt, qr_id_opt, now, conn)
+                    lending::returned_lending(query, now, conn)
                 }
             }),
         )
@@ -186,10 +181,7 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
             get({
                 info!("GET /get_spot");
                 let conn = Arc::clone(&conn);
-                move |query: Query<HashMap<String, String>>| {
-                    let name = query.0.get("name").cloned();
-                    spot::get_one_spot(name, conn)
-                }
+                move |Query(query)| spot::get_one_spot(query, conn)
             }),
         )
         .route(
@@ -205,10 +197,7 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
             delete({
                 info!("DELETE /delete_spot");
                 let conn = Arc::clone(&conn);
-                move |query: Query<HashMap<String, String>>| {
-                    let name = query.0.get("name").cloned();
-                    spot::delte_spot(name, conn)
-                }
+                move |Query(query)| spot::delte_spot(query, conn)
             }),
         )
         .route(
@@ -229,7 +218,8 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
     // サーバーの実行
     axum::Server::bind(&bind)
         .serve(app.into_make_service())
-        .await?;
+        .await
+        .map_err(|_| QrError::Serve)?;
 
     Ok(())
 }

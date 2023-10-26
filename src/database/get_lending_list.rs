@@ -1,5 +1,7 @@
-use crate::Lending;
-use anyhow::{Context, Result};
+use crate::{
+    error_handling::{QrError, Result},
+    Lending,
+};
 
 /// 今貸し出されている物品の一覧を取得
 pub async fn get_lending_list<'a, E>(conn: E) -> Result<Vec<Lending>>
@@ -9,7 +11,7 @@ where
     let list = sqlx::query_as!(Lending, "SELECT * FROM lending WHERE returned_at IS NULL")
         .fetch_all(conn)
         .await
-        .context("Failed to get lending")?;
+        .map_err(|_| QrError::DatabaseGet("lending".to_string()))?;
 
     Ok(list)
 }

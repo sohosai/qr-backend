@@ -1,4 +1,4 @@
-use anyhow::{Context, Result};
+use crate::error_handling::{QrError, Result};
 use chrono::{DateTime, Utc};
 use uuid::Uuid;
 
@@ -15,7 +15,7 @@ where
     )
     .execute(conn)
     .await
-    .context("Failed to returned")?;
+    .map_err(|_| QrError::DatabaseUpdate("lending(returned)".to_string()))?;
 
     Ok(())
 }
@@ -51,6 +51,6 @@ mod tests {
         assert!(res.is_ok());
 
         let res = get_one_lending(&pool, IdType::FixturesId(fixtures_id)).await;
-        assert!(res.unwrap().is_none());
+        assert!(res.is_err());
     }
 }

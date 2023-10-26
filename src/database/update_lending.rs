@@ -1,5 +1,7 @@
-use crate::Lending;
-use anyhow::{Context, Result};
+use crate::{
+    error_handling::{QrError, Result},
+    Lending,
+};
 
 /// 貸し出し情報のアップデートを行う
 pub async fn update_lending<'a, E>(conn: E, new_info: Lending) -> Result<()>
@@ -40,7 +42,7 @@ where
     )
     .execute(conn)
     .await
-    .context("Failed to update to lending")?;
+    .map_err(|_| QrError::DatabaseUpdate("lending".to_string()))?;
 
     Ok(())
 }

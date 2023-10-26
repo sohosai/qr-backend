@@ -1,5 +1,7 @@
-use crate::Container;
-use anyhow::{Context, Result};
+use crate::{
+    error_handling::{QrError, Result},
+    Container,
+};
 
 /// 備品登録をする
 pub async fn insert_container<'a, E>(conn: E, info: Container) -> Result<()>
@@ -31,7 +33,7 @@ where
     )
     .execute(conn)
     .await
-    .context("Failed to insert to container")?;
+    .map_err(|_| QrError::DatabaseAdd("container".to_string()))?;
 
     Ok(())
 }

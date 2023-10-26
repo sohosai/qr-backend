@@ -12,6 +12,8 @@ use uuid::Uuid;
 pub mod app;
 /// データベース周りのモジュール
 pub mod database;
+/// エラーハンドリング周り
+pub mod error_handling;
 /// 検索エンジン周りのモジュール
 pub mod search_engine;
 

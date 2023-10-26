@@ -1,11 +1,14 @@
-use anyhow::{Context, Result};
+use crate::{
+    error_handling::{QrError, Result},
+    Fixtures,
+};
 
 /// 備品登録をする
-pub async fn insert_fixtures<'a, E>(conn: E, info: crate::Fixtures) -> Result<()>
+pub async fn insert_fixtures<'a, E>(conn: E, info: Fixtures) -> Result<()>
 where
     E: sqlx::Executor<'a, Database = sqlx::Postgres>,
 {
-    let crate::Fixtures {
+    let Fixtures {
         id,
         created_at,
         qr_id,
@@ -51,7 +54,7 @@ where
     )
     .execute(conn)
     .await
-    .context("Failed to insert to fixtures")?;
+    .map_err(|_| QrError::DatabaseAdd("fixtures".to_string()))?;
 
     Ok(())
 }

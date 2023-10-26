@@ -1,5 +1,7 @@
-use crate::Spot;
-use anyhow::{Context, Result};
+use crate::{
+    error_handling::{QrError, Result},
+    Spot,
+};
 
 /// 情報のアップデートを行う
 pub async fn update_spot<'a, E>(conn: E, new_info: Spot) -> Result<()>
@@ -25,7 +27,7 @@ where
     )
     .execute(conn)
     .await
-    .context("Failed to update to spot")?;
+    .map_err(|_| QrError::DatabaseUpdate("spot".to_string()))?;
 
     Ok(())
 }

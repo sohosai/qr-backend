@@ -1,7 +1,8 @@
 use crate::database::get_one_fixtures::{get_one_fixtures, IdType};
+use crate::error_handling::{result_to_handler_with_log, QrError, ReturnData};
 use crate::search_engine::{SearchFixtures, SearchResult};
 use crate::Fixtures;
-use axum::{extract::Json, http::StatusCode};
+use axum::extract::Json;
 use sqlx::{pool::Pool, postgres::Postgres};
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -14,29 +15,33 @@ pub async fn insert_fixtures(
     Json(fixtures): Json<Fixtures>,
     conn: Arc<Pool<Postgres>>,
     context: Arc<SearchFixtures>,
-) -> StatusCode {
+) -> ReturnData<()> {
     info!("Try insert fixtures: {fixtures:?}");
-    match crate::database::insert_fixtures::insert_fixtures(&*conn, fixtures.clone()).await {
-        Ok(()) => {
-            info!("Success insert fixtures(DB)[{}]", &fixtures.id);
-            match context.add_or_replace(&[fixtures.clone()]).await {
-                Ok(_) => {
-                    info!("Success insert fixtures(Search Engine)[{}]", &fixtures.id);
-                    StatusCode::ACCEPTED
-                }
-                Err(err) => {
-                    error!(
-                        "Failed insert fixtures(Search Engine)[{}]: {err}",
-                        &fixtures.id
-                    );
-                    StatusCode::BAD_REQUEST
-                }
-            }
-        }
-        Err(err) => {
-            error!("Failed insert fixtures(DB)[{}]: {err}", &fixtures.id);
-            StatusCode::BAD_REQUEST
-        }
+    let res = crate::database::insert_fixtures::insert_fixtures(&*conn, fixtures.clone()).await;
+
+    // DBの処理が成功した時の結果
+    let r1 = result_to_handler_with_log(
+        |_| Some(format!("Success insert fixtures(DB)[{}]", &fixtures.id)),
+        |e| Some(format!("{e}[{}]", &fixtures.id)),
+        &res,
+    )
+    .await;
+
+    if res.is_ok() {
+        let res = context.add_or_replace(&[fixtures.clone()]).await;
+        result_to_handler_with_log(
+            |_| {
+                Some(format!(
+                    "Success insert fixtures(Search Engine)[{}]",
+                    &fixtures.id
+                ))
+            },
+            |e| Some(format!("{e}[{}]", &fixtures.id)),
+            &res,
+        )
+        .await
+    } else {
+        r1
     }
 }
 
@@ -44,116 +49,111 @@ pub async fn update_fixtures(
     Json(fixtures): Json<Fixtures>,
     conn: Arc<Pool<Postgres>>,
     context: Arc<SearchFixtures>,
-) -> StatusCode {
+) -> ReturnData<()> {
     info!("Try update fixtures: {fixtures:?}");
-    match crate::database::update_fixtures::update_fixtures(&*conn, fixtures.clone()).await {
-        Ok(()) => {
-            info!("Success update fixtures(DB)[{}]", &fixtures.id);
-            match context.add_or_replace(&[fixtures.clone()]).await {
-                Ok(_) => {
-                    info!("Success update fixtures(Search Engine)[{}]", &fixtures.id);
-                    StatusCode::ACCEPTED
-                }
-                Err(err) => {
-                    error!(
-                        "Failed insert fixtures(Search Engine)[{}]: {err}",
-                        &fixtures.id
-                    );
-                    StatusCode::BAD_REQUEST
-                }
-            }
-        }
-        Err(err) => {
-            error!("Failed insert fixtures(DB)[{}]: {err}", &fixtures.id);
-            StatusCode::BAD_REQUEST
-        }
+    let res = crate::database::update_fixtures::update_fixtures(&*conn, fixtures.clone()).await;
+
+    // DBの処理が成功した時の結果
+    let r1 = result_to_handler_with_log(
+        |_| Some(format!("Success update fixtures(DB)[{}]", &fixtures.id)),
+        |e| Some(format!("{e}[{}]", &fixtures.id)),
+        &res,
+    )
+    .await;
+
+    if res.is_ok() {
+        let res = context.add_or_replace(&[fixtures.clone()]).await;
+        result_to_handler_with_log(
+            |_| {
+                Some(format!(
+                    "Success update fixtures(Search Engine)[{}]",
+                    &fixtures.id
+                ))
+            },
+            |e| Some(format!("{e}[{}]", &fixtures.id)),
+            &res,
+        )
+        .await
+    } else {
+        r1
     }
 }
 
 pub async fn delete_fixtures(
-    uuid: Option<Uuid>,
+    query: HashMap<String, String>,
     conn: Arc<Pool<Postgres>>,
     context: Arc<SearchFixtures>,
-) -> StatusCode {
-    match uuid {
-        Some(uuid) => {
+) -> ReturnData<()> {
+    let id_opt = query.get("id");
+    if let Some(id) = id_opt {
+        let uuid_opt = Uuid::parse_str(id).ok();
+        if let Some(uuid) = uuid_opt {
             info!("Try delete fixtures: {uuid}");
-            match crate::database::delete_fixtures::delete_fixtures(&*conn, uuid).await {
-                Ok(()) => {
-                    info!("Success delete fixtures(DB)[{uuid}]");
-                    let context = &*context;
-                    match context.delete(&[uuid]).await {
-                        Ok(()) => {
-                            info!("Success delete fixtures(Search Engine)[{uuid}]");
-                            StatusCode::ACCEPTED
-                        }
-                        Err(err) => {
-                            error!("Failed insert fixtures(Search Engine)[{uuid}]: {err}");
-                            StatusCode::BAD_REQUEST
-                        }
-                    }
-                }
-                Err(err) => {
-                    error!("Failed insert fixtures(DB)[{uuid}]: {err}");
-                    StatusCode::BAD_REQUEST
-                }
+            let res = crate::database::delete_fixtures::delete_fixtures(&*conn, uuid).await;
+
+            // DBの処理が成功した時の結果
+            let r1 = result_to_handler_with_log(
+                |_| Some(format!("Success delete fixtures(DB)[{uuid}]")),
+                |e| Some(format!("{e}[{uuid}]")),
+                &res,
+            )
+            .await;
+
+            if res.is_ok() {
+                let res = context.delete(&[uuid]).await;
+                result_to_handler_with_log(
+                    |_| Some(format!("Success delete fixtures(Search Engine)[{uuid}]")),
+                    |e| Some(format!("{e}[{uuid}]")),
+                    &res,
+                )
+                .await
+            } else {
+                r1
             }
+        } else {
+            let err = Err(QrError::BrokenUuid(id.to_string()));
+            result_to_handler_with_log(|_| None, |e| Some(e.to_string()), &err).await
         }
-        None => {
-            error!("Not found uuid");
-            StatusCode::BAD_REQUEST
-        }
+    } else {
+        let err = Err(QrError::UrlQuery("id".to_string()));
+        result_to_handler_with_log(|_| None, |e| Some(e.to_string()), &err).await
     }
 }
 
 pub async fn get_fixtures(
     query: HashMap<String, String>,
     conn: Arc<Pool<Postgres>>,
-) -> Json<Option<Fixtures>> {
+) -> ReturnData<Fixtures> {
     match (query.get("id"), query.get("qr_id")) {
         (Some(id), _) => {
             let uuid_opt = Uuid::parse_str(id).ok();
             if let Some(uuid) = uuid_opt {
                 info!("Try get fixtures with uuid: {uuid}");
-                match get_one_fixtures(&*conn, IdType::FixturesId(uuid)).await {
-                    Ok(f) => {
-                        if f.is_some() {
-                            info!("Success get fixtures with uuid[{uuid}]");
-                        } else {
-                            info!("Not found fixtures[{uuid}]");
-                        }
-                        Json(f)
-                    }
-                    Err(err) => {
-                        error!("Failed get fixtures with uuid[{uuid}]: {err}");
-                        Json(None)
-                    }
-                }
+                let res = get_one_fixtures(&*conn, IdType::FixturesId(uuid)).await;
+                result_to_handler_with_log(
+                    |_| Some(format!("Success get fixtures with uuid[{uuid}]")),
+                    |e| Some(format!("{e}[{uuid}]")),
+                    &res,
+                )
+                .await
             } else {
-                error!("Break uuid: {id}");
-                Json(None)
+                let err = Err(QrError::BrokenUuid(id.to_string()));
+                result_to_handler_with_log(|_| None, |e| Some(e.to_string()), &err).await
             }
         }
         (_, Some(qr_id)) => {
             info!("Try get fixtures with qr_id: {qr_id}");
-            match get_one_fixtures(&*conn, IdType::QrId(qr_id.clone())).await {
-                Ok(f) => {
-                    if f.is_some() {
-                        info!("Success get fixtures with qr_id[{qr_id}]");
-                    } else {
-                        info!("Failed get fixtures with qr_id[{qr_id}]");
-                    }
-                    Json(f)
-                }
-                Err(err) => {
-                    error!("Failed get fixtures[{qr_id}]: {err}");
-                    Json(None)
-                }
-            }
+            let res = get_one_fixtures(&*conn, IdType::QrId(qr_id.clone())).await;
+            result_to_handler_with_log(
+                |_| Some(format!("Success get fixtures with qr_id[{qr_id}]")),
+                |e| Some(format!("{e}[{qr_id}]")),
+                &res,
+            )
+            .await
         }
         _ => {
-            error!("Invalid query");
-            Json(None)
+            let err = Err(QrError::UrlQuery("qr_id, id".to_string()));
+            result_to_handler_with_log(|_| None, |e| Some(e.to_string()), &err).await
         }
     }
 }
@@ -161,21 +161,18 @@ pub async fn get_fixtures(
 pub async fn search_fixtures(
     keywords_str: String,
     context: Arc<SearchFixtures>,
-) -> Json<Option<Vec<SearchResult<Fixtures>>>> {
+) -> ReturnData<Vec<SearchResult<Fixtures>>> {
     let keywords = keywords_str
         .split(',') // カンマ区切りであることを要求する
         .map(|s| s.to_string())
         .collect::<Vec<String>>();
     let context = &*context;
     info!("Try search fixtures: {keywords:?}");
-    match context.search(&keywords).await {
-        Ok(res) => {
-            info!("Success search fixtures[{keywords:?}]");
-            Json(Some(res))
-        }
-        Err(err) => {
-            error!("Failed search fixtures[{keywords:?}]: {err}");
-            Json(None)
-        }
-    }
+    let res = context.search(&keywords).await;
+    result_to_handler_with_log(
+        |_| Some(format!("Success search fixtures[{keywords:?}]")),
+        |e| Some(format!("{e}[{keywords:?}]")),
+        &res,
+    )
+    .await
 }

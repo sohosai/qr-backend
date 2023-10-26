@@ -1,5 +1,7 @@
-use crate::Fixtures;
-use anyhow::{Context, Result};
+use crate::{
+    error_handling::{QrError, Result},
+    Fixtures,
+};
 
 pub async fn update_fixtures<'a, E>(conn: E, new_info: Fixtures) -> Result<()>
 where
@@ -50,7 +52,7 @@ where
     )
     .execute(conn)
     .await
-    .context("Failed to update to fixtures")?;
+    .map_err(|_| QrError::DatabaseUpdate("fixtures".to_string()))?;
 
     Ok(())
 }
@@ -100,7 +102,6 @@ mod tests {
 
         let result = get_one_fixtures(&pool, IdType::FixturesId(uuid))
             .await
-            .unwrap()
             .unwrap();
         assert_eq!(result.qr_id, "test2".to_string())
     }

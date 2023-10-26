@@ -1,5 +1,7 @@
-use crate::Fixtures;
-use anyhow::{Context, Result};
+use crate::{
+    error_handling::{QrError, Result},
+    Fixtures,
+};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -9,7 +11,7 @@ pub enum IdType {
     QrId(String),
 }
 
-pub async fn get_one_fixtures<'a, E>(conn: E, id: IdType) -> Result<Option<Fixtures>>
+pub async fn get_one_fixtures<'a, E>(conn: E, id: IdType) -> Result<Fixtures>
 where
     E: sqlx::Executor<'a, Database = sqlx::Postgres>,
 {
@@ -19,18 +21,24 @@ where
                 sqlx::query_as!(Fixtures, "SELECT * FROM fixtures WHERE id = $1", id)
                     .fetch_optional(conn)
                     .await
-                    .context("Failed to get fixtures")?;
-
-            Ok(fixtures_opt)
+                    .map_err(|_| QrError::DatabaseGet("fixtures".to_string()))?;
+            if let Some(fixtures) = fixtures_opt {
+                Ok(fixtures)
+            } else {
+                Err(QrError::DatabaseNotFound(id.to_string()))
+            }
         }
         IdType::QrId(id) => {
             let fixtures_opt =
                 sqlx::query_as!(Fixtures, "SELECT * FROM fixtures WHERE qr_id = $1", id)
                     .fetch_optional(conn)
                     .await
-                    .context("Failed to get fixtures")?;
-
-            Ok(fixtures_opt)
+                    .map_err(|_| QrError::DatabaseGet("fixtures".to_string()))?;
+            if let Some(fixtures) = fixtures_opt {
+                Ok(fixtures)
+            } else {
+                Err(QrError::DatabaseNotFound(id.to_string()))
+            }
         }
     }
 }
@@ -62,16 +70,12 @@ mod tests {
         .unwrap();
 
         insert_fixtures(&pool, info).await.unwrap();
-        let result: Option<Fixtures> = get_one_fixtures(&pool, FixturesId(uuid)).await.unwrap();
-        assert!(result.is_some());
-        let result: Option<Fixtures> = get_one_fixtures(&pool, QrId("test".to_string()))
-            .await
-            .unwrap();
-        assert!(result.is_some());
+        let result = get_one_fixtures(&pool, FixturesId(uuid)).await;
+        assert!(result.is_ok());
+        let result = get_one_fixtures(&pool, QrId("test".to_string())).await;
+        assert!(result.is_ok());
 
-        let result: Option<Fixtures> = get_one_fixtures(&pool, FixturesId(dummy_uuid))
-            .await
-            .unwrap();
-        assert!(result.is_none());
+        let result = get_one_fixtures(&pool, FixturesId(dummy_uuid)).await;
+        assert!(result.is_err());
     }
 }

@@ -1,4 +1,4 @@
-use anyhow::{Context, Result};
+use crate::error_handling::{QrError, Result};
 use uuid::Uuid;
 
 pub async fn delete_fixtures<'a, E>(conn: E, uuid: Uuid) -> Result<()>
@@ -8,7 +8,7 @@ where
     sqlx::query!("DELETE FROM fixtures WHERE id = $1", uuid)
         .execute(conn)
         .await
-        .context("Failed to delete fixtures")?;
+        .map_err(|_| QrError::DatabaseDelete("fixtures".to_string()))?;
 
     Ok(())
 }
@@ -40,11 +40,11 @@ mod tests {
         .unwrap();
 
         insert_fixtures(&pool, info).await.unwrap();
-        let result = get_one_fixtures(&pool, FixturesId(uuid)).await.unwrap();
-        assert!(result.is_some());
+        let result = get_one_fixtures(&pool, FixturesId(uuid)).await;
+        assert!(result.is_ok());
 
         delete_fixtures(&pool, uuid).await.unwrap();
-        let result = get_one_fixtures(&pool, FixturesId(uuid)).await.unwrap();
-        assert!(result.is_none());
+        let result = get_one_fixtures(&pool, FixturesId(uuid)).await;
+        assert!(result.is_err());
     }
 }
