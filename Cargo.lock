@@ -1543,6 +1543,7 @@ dependencies = [
  "axum",
  "chrono",
  "meilisearch-sdk",
+ "rand",
  "reqwest",
  "serde",
  "serde_json",
