@@ -3,7 +3,7 @@ use crate::{
     Spot,
 };
 
-pub async fn get_one_spot<'a, E>(conn: E, name: &str) -> Result<Option<Spot>>
+pub async fn get_one_spot<'a, E>(conn: E, name: &str) -> Result<Spot>
 where
     E: sqlx::Executor<'a, Database = sqlx::Postgres>,
 {
@@ -11,8 +11,11 @@ where
         .fetch_optional(conn)
         .await
         .map_err(|_| QrError::DatabaseGet("spot".to_string()))?;
-
-    Ok(spot_opt)
+    if let Some(spot) = spot_opt {
+        Ok(spot)
+    } else {
+        Err(QrError::DatabaseNotFound(name.to_string()))
+    }
 }
 
 #[cfg(test)]
@@ -33,10 +36,10 @@ mod tests {
         .unwrap();
 
         insert_spot(&pool, info).await.unwrap();
-        let result: Option<Spot> = get_one_spot(&pool, "test1").await.unwrap();
-        assert!(result.is_some());
+        let result = get_one_spot(&pool, "test1").await;
+        assert!(result.is_ok());
 
-        let result: Option<Spot> = get_one_spot(&pool, "test2").await.unwrap();
-        assert!(result.is_none());
+        let result = get_one_spot(&pool, "test2").await;
+        assert!(result.is_err());
     }
 }

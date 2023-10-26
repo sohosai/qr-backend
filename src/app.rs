@@ -181,10 +181,7 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
             get({
                 info!("GET /get_spot");
                 let conn = Arc::clone(&conn);
-                move |query: Query<HashMap<String, String>>| {
-                    let name = query.0.get("name").cloned();
-                    spot::get_one_spot(name, conn)
-                }
+                move |Query(query)| spot::get_one_spot(query, conn)
             }),
         )
         .route(
@@ -200,10 +197,7 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
             delete({
                 info!("DELETE /delete_spot");
                 let conn = Arc::clone(&conn);
-                move |query: Query<HashMap<String, String>>| {
-                    let name = query.0.get("name").cloned();
-                    spot::delte_spot(name, conn)
-                }
+                move |Query(query)| spot::delte_spot(query, conn)
             }),
         )
         .route(

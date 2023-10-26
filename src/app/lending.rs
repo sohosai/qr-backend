@@ -84,7 +84,7 @@ pub async fn get_lending_list(conn: Arc<Pool<Postgres>>) -> ReturnData<Vec<Lendi
     info!("Try get lending list");
     let res = crate::database::get_lending_list::get_lending_list(&*conn).await;
     result_to_handler_with_log(
-        |_| Some(format!("Success get lending list")),
+        |_| Some("Success get lending list".to_string()),
         |e| Some(e.to_string()),
         &res,
     )

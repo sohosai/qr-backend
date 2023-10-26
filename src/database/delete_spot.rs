@@ -31,11 +31,11 @@ mod tests {
         .unwrap();
 
         insert_spot(&pool, info).await.unwrap();
-        let result = get_one_spot(&pool, name).await.unwrap();
-        assert!(result.is_some());
+        let result = get_one_spot(&pool, name).await;
+        assert!(result.is_ok());
 
         delete_spot(&pool, name).await.unwrap();
-        let result = get_one_spot(&pool, name).await.unwrap();
-        assert!(result.is_none());
+        let result = get_one_spot(&pool, name).await;
+        assert!(result.is_err());
     }
 }
