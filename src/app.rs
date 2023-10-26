@@ -12,7 +12,6 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 use tower_http::cors::{Any, CorsLayer};
 use tracing::*;
-use uuid::Uuid;
 
 use crate::search_engine;
 
@@ -84,10 +83,7 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
                 info!("DELETE /delete_fixtures");
                 let conn = Arc::clone(&conn);
                 let context = Arc::clone(&search_fixtures_context);
-                move |query: Query<HashMap<String, String>>| {
-                    let uuid_opt = query.0.get("id").and_then(|s| Uuid::parse_str(s).ok());
-                    fixtures::delete_fixtures(uuid_opt, conn, context)
-                }
+                move |Query(query)| fixtures::delete_fixtures(query, conn, context)
             }),
         )
         .route(
@@ -134,11 +130,9 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
             post({
                 info!("POST /returned_lending");
                 let conn = Arc::clone(&conn);
-                move |query: Query<HashMap<String, String>>| {
-                    let uuid_opt = query.0.get("id").and_then(|s| Uuid::parse_str(s).ok());
-                    let qr_id_opt = query.0.get("qr_id").cloned();
+                move |Query(query)| {
                     let now = Utc::now();
-                    lending::returned_lending(uuid_opt, qr_id_opt, now, conn)
+                    lending::returned_lending(query, now, conn)
                 }
             }),
         )

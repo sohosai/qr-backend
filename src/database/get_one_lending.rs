@@ -12,7 +12,7 @@ pub enum IdType {
     QrId(String),
 }
 
-pub async fn get_one_lending<'a, E>(conn: E, id: IdType) -> Result<Option<Lending>>
+pub async fn get_one_lending<'a, E>(conn: E, id: IdType) -> Result<Lending>
 where
     E: sqlx::Executor<'a, Database = sqlx::Postgres>,
 {
@@ -26,8 +26,11 @@ where
             .fetch_optional(conn)
             .await
             .map_err(|_| QrError::DatabaseGet("lending".to_string()))?;
-
-            Ok(lending_opt)
+            if let Some(lending) = lending_opt {
+                Ok(lending)
+            } else {
+                Err(QrError::DatabaseNotFound(id.to_string()))
+            }
         }
         IdType::FixturesId(id) => {
             let lending_opt = sqlx::query_as!(
@@ -38,8 +41,11 @@ where
             .fetch_optional(conn)
             .await
             .map_err(|_| QrError::DatabaseGet("lending".to_string()))?;
-
-            Ok(lending_opt)
+            if let Some(lending) = lending_opt {
+                Ok(lending)
+            } else {
+                Err(QrError::DatabaseNotFound(id.to_string()))
+            }
         }
         IdType::QrId(id) => {
             let lending_opt = sqlx::query_as!(
@@ -50,8 +56,11 @@ where
             .fetch_optional(conn)
             .await
             .map_err(|_| QrError::DatabaseGet("lending".to_string()))?;
-
-            Ok(lending_opt)
+            if let Some(lending) = lending_opt {
+                Ok(lending)
+            } else {
+                Err(QrError::DatabaseNotFound(id.to_string()))
+            }
         }
     }
 }
@@ -82,27 +91,19 @@ mod tests {
 
         insert_lending(&pool, info).await.unwrap();
 
-        let result = get_one_lending(&pool, LendingId(id)).await.unwrap();
-        assert!(result.is_some());
+        let result = get_one_lending(&pool, LendingId(id)).await;
+        assert!(result.is_ok());
 
-        let result = get_one_lending(&pool, FixturesId(fixtures_id))
-            .await
-            .unwrap();
-        assert!(result.is_some());
+        let result = get_one_lending(&pool, FixturesId(fixtures_id)).await;
+        assert!(result.is_ok());
 
-        let result = get_one_lending(&pool, QrId("x234".to_string()))
-            .await
-            .unwrap();
-        assert!(result.is_some());
+        let result = get_one_lending(&pool, QrId("x234".to_string())).await;
+        assert!(result.is_ok());
 
-        let result = get_one_lending(&pool, FixturesId(dummy_fixtures_id))
-            .await
-            .unwrap();
-        assert!(result.is_none());
+        let result = get_one_lending(&pool, FixturesId(dummy_fixtures_id)).await;
+        assert!(result.is_err());
 
-        let result = get_one_lending(&pool, QrId("x235".to_string()))
-            .await
-            .unwrap();
-        assert!(result.is_none());
+        let result = get_one_lending(&pool, QrId("x235".to_string())).await;
+        assert!(result.is_err());
     }
 }

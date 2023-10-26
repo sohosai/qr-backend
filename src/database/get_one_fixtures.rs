@@ -11,7 +11,7 @@ pub enum IdType {
     QrId(String),
 }
 
-pub async fn get_one_fixtures<'a, E>(conn: E, id: IdType) -> Result<Option<Fixtures>>
+pub async fn get_one_fixtures<'a, E>(conn: E, id: IdType) -> Result<Fixtures>
 where
     E: sqlx::Executor<'a, Database = sqlx::Postgres>,
 {
@@ -22,8 +22,11 @@ where
                     .fetch_optional(conn)
                     .await
                     .map_err(|_| QrError::DatabaseGet("fixtures".to_string()))?;
-
-            Ok(fixtures_opt)
+            if let Some(fixtures) = fixtures_opt {
+                Ok(fixtures)
+            } else {
+                Err(QrError::DatabaseNotFound(id.to_string()))
+            }
         }
         IdType::QrId(id) => {
             let fixtures_opt =
@@ -31,8 +34,11 @@ where
                     .fetch_optional(conn)
                     .await
                     .map_err(|_| QrError::DatabaseGet("fixtures".to_string()))?;
-
-            Ok(fixtures_opt)
+            if let Some(fixtures) = fixtures_opt {
+                Ok(fixtures)
+            } else {
+                Err(QrError::DatabaseNotFound(id.to_string()))
+            }
         }
     }
 }
@@ -64,16 +70,12 @@ mod tests {
         .unwrap();
 
         insert_fixtures(&pool, info).await.unwrap();
-        let result: Option<Fixtures> = get_one_fixtures(&pool, FixturesId(uuid)).await.unwrap();
-        assert!(result.is_some());
-        let result: Option<Fixtures> = get_one_fixtures(&pool, QrId("test".to_string()))
-            .await
-            .unwrap();
-        assert!(result.is_some());
+        let result = get_one_fixtures(&pool, FixturesId(uuid)).await;
+        assert!(result.is_ok());
+        let result = get_one_fixtures(&pool, QrId("test".to_string())).await;
+        assert!(result.is_ok());
 
-        let result: Option<Fixtures> = get_one_fixtures(&pool, FixturesId(dummy_uuid))
-            .await
-            .unwrap();
-        assert!(result.is_none());
+        let result = get_one_fixtures(&pool, FixturesId(dummy_uuid)).await;
+        assert!(result.is_err());
     }
 }

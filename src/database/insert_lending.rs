@@ -23,11 +23,11 @@ where
 
     // 物品IDとQR IDを元に二重貸し出しにならないかを確認する
     let is_lending1 = get_one_lending(conn.clone(), IdType::FixturesId(fixtures_id))
-        .await?
-        .is_some();
+        .await
+        .is_ok();
     let is_lending2 = get_one_lending(conn.clone(), IdType::QrId(fixtures_qr_id.clone()))
-        .await?
-        .is_some();
+        .await
+        .is_ok();
 
     if !is_lending1 && !is_lending2 {
         sqlx::query!(

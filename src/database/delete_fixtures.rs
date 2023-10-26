@@ -40,11 +40,11 @@ mod tests {
         .unwrap();
 
         insert_fixtures(&pool, info).await.unwrap();
-        let result = get_one_fixtures(&pool, FixturesId(uuid)).await.unwrap();
-        assert!(result.is_some());
+        let result = get_one_fixtures(&pool, FixturesId(uuid)).await;
+        assert!(result.is_ok());
 
         delete_fixtures(&pool, uuid).await.unwrap();
-        let result = get_one_fixtures(&pool, FixturesId(uuid)).await.unwrap();
-        assert!(result.is_none());
+        let result = get_one_fixtures(&pool, FixturesId(uuid)).await;
+        assert!(result.is_err());
     }
 }

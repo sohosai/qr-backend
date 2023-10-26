@@ -51,6 +51,6 @@ mod tests {
         assert!(res.is_ok());
 
         let res = get_one_lending(&pool, IdType::FixturesId(fixtures_id)).await;
-        assert!(res.unwrap().is_none());
+        assert!(res.is_err());
     }
 }

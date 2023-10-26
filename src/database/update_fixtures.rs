@@ -102,7 +102,6 @@ mod tests {
 
         let result = get_one_fixtures(&pool, IdType::FixturesId(uuid))
             .await
-            .unwrap()
             .unwrap();
         assert_eq!(result.qr_id, "test2".to_string())
     }
