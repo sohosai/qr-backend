@@ -40,6 +40,15 @@ pub enum Role {
     General,
 }
 
+pub fn str_to_role_opt(item: &str) -> Option<Role> {
+    match item {
+        "administrator" => Some(Role::Administrator),
+        "equipment_manager" => Some(Role::EquipmentManager),
+        "general" => Some(Role::General),
+        _ => None,
+    }
+}
+
 impl std::fmt::Display for Role {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
@@ -53,11 +62,9 @@ impl std::fmt::Display for Role {
 
 impl From<std::string::String> for Role {
     fn from(item: String) -> Self {
-        match item.as_str() {
-            "administrator" => Role::Administrator,
-            "equipment_manager" => Role::EquipmentManager,
-            "general" => Role::General,
-            _ => panic!("Undefined role: {item}"),
+        match str_to_role_opt(&item) {
+            Some(r) => r,
+            None => panic!("unkown role: {item}"),
         }
     }
 }
@@ -135,7 +142,7 @@ pub fn gen_passtoken(role: Role, key: &str) -> Result<Passtoken> {
     }
 }
 
-pub async fn insert_passtoken<'a, E>(conn: E, passtoken: Passtoken) -> Result<()>
+pub async fn insert_passtoken<'a, E>(conn: E, passtoken: &Passtoken) -> Result<()>
 where
     E: sqlx::Executor<'a, Database = sqlx::Postgres>,
 {

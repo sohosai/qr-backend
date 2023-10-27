@@ -58,3 +58,7 @@
 	    limit_day: int NOT NULL,
 	);
 	
+2023-10-27 03:06:56.693 JST [13295] LOG:  received smart shutdown request
+2023-10-27 03:06:56.696 JST [13295] LOG:  background worker "logical replication launcher" (PID 13302) exited with exit code 1
+2023-10-27 03:06:56.696 JST [13297] LOG:  shutting down
+2023-10-27 03:06:56.710 JST [13295] LOG:  database system is shut down

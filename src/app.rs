@@ -1,12 +1,13 @@
 use crate::error_handling::{QrError, Result};
 use axum::{
-    extract::Query,
+    extract::{Query, TypedHeader},
+    headers::authorization::{Authorization, Basic},
     http::Method,
     routing::{delete, get, post},
     Router,
 };
 use chrono::Utc;
-use reqwest::header::CONTENT_TYPE;
+use reqwest::header::{AUTHORIZATION, CONTENT_TYPE};
 use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::sync::Arc;
@@ -15,6 +16,8 @@ use tracing::*;
 
 use crate::search_engine;
 
+/// 認証まわりのエンドポイントの定義
+pub mod certification;
 /// コンテナの管理を行うエンドポイントの定義
 pub mod container;
 /// 物品情報の登録を行うエンドポイントの定義
@@ -208,10 +211,20 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
                 move |body| container::insert_container(body, conn)
             }),
         )
+        .route(
+            "/gen_passtoken",
+            post({
+                info!("POST /gen_passtoken");
+                let conn = Arc::clone(&conn);
+                move |TypedHeader(Authorization(basic)): TypedHeader<Authorization<Basic>>| {
+                    certification::api_gen_passtoken(basic, conn)
+                }
+            }),
+        )
         .layer(
             CorsLayer::new()
                 .allow_methods([Method::GET, Method::POST, Method::DELETE])
-                .allow_headers([CONTENT_TYPE])
+                .allow_headers([CONTENT_TYPE, AUTHORIZATION])
                 .allow_origin(Any),
         );
 
