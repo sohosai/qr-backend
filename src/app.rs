@@ -1,7 +1,7 @@
 use crate::error_handling::{QrError, Result};
 use axum::{
     extract::{Query, TypedHeader},
-    headers::authorization::{Authorization, Basic},
+    headers::authorization::{Authorization, Basic, Bearer},
     http::Method,
     routing::{delete, get, post},
     Router,
@@ -68,7 +68,10 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
                 info!("POST /insert_fixtures");
                 let conn = Arc::clone(&conn);
                 let context = Arc::clone(&search_fixtures_context);
-                move |body| fixtures::insert_fixtures(body, conn, context)
+                move |TypedHeader(Authorization(bearer)): TypedHeader<Authorization<Bearer>>,
+                      body| {
+                    fixtures::insert_fixtures(bearer, body, conn, context)
+                }
             }),
         )
         .route(
@@ -77,7 +80,8 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
                 info!("POST /update_fixtures");
                 let conn = Arc::clone(&conn);
                 let context = Arc::clone(&search_fixtures_context);
-                move |body| fixtures::update_fixtures(body, conn, context)
+                move |TypedHeader(Authorization(bearer)): TypedHeader<Authorization<Bearer>>,
+                      body| fixtures::update_fixtures(bearer, body, conn, context)
             }),
         )
         .route(
@@ -86,7 +90,10 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
                 info!("DELETE /delete_fixtures");
                 let conn = Arc::clone(&conn);
                 let context = Arc::clone(&search_fixtures_context);
-                move |Query(query)| fixtures::delete_fixtures(query, conn, context)
+                move |TypedHeader(Authorization(bearer)): TypedHeader<Authorization<Bearer>>,
+                      Query(query)| {
+                    fixtures::delete_fixtures(bearer, query, conn, context)
+                }
             }),
         )
         .route(

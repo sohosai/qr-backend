@@ -3,7 +3,7 @@ use serde::Serialize;
 use thiserror::Error;
 use tracing::*;
 
-#[derive(Debug, Clone, Error)]
+#[derive(Debug, Clone, Error, PartialEq, Eq)]
 pub enum QrError {
     #[error("Couldn't found {} on environment", .0)]
     Environment(String),
