@@ -19,7 +19,7 @@ pub async fn insert_fixtures(
     context: Arc<SearchFixtures>,
 ) -> ReturnData<()> {
     let role = get_role(&*conn, bearer.token()).await;
-    if Ok(Role::EquipmentManager) == role {
+    if Ok(Role::EquipmentManager) == role && Ok(Role::Administrator) == role {
         info!("Try insert fixtures: {fixtures:?}");
         let res = crate::database::insert_fixtures::insert_fixtures(&*conn, fixtures.clone()).await;
 
@@ -59,7 +59,7 @@ pub async fn update_fixtures(
     context: Arc<SearchFixtures>,
 ) -> ReturnData<()> {
     let role = get_role(&*conn, bearer.token()).await;
-    if Ok(Role::EquipmentManager) == role {
+    if Ok(Role::EquipmentManager) == role && Ok(Role::Administrator) == role {
         info!("Try update fixtures: {fixtures:?}");
         let res = crate::database::update_fixtures::update_fixtures(&*conn, fixtures.clone()).await;
 
@@ -99,7 +99,7 @@ pub async fn delete_fixtures(
     context: Arc<SearchFixtures>,
 ) -> ReturnData<()> {
     let role = get_role(&*conn, bearer.token()).await;
-    if Ok(Role::EquipmentManager) == role {
+    if Ok(Role::Administrator) == role {
         let id_opt = query.get("id");
         if let Some(id) = id_opt {
             let uuid_opt = Uuid::parse_str(id).ok();
