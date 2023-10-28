@@ -14,7 +14,7 @@ pub async fn insert_container(
     conn: Arc<Pool<Postgres>>,
 ) -> ReturnData<()> {
     let role = get_role(&*conn, bearer.token()).await;
-    if Ok(Role::EquipmentManager) == role && Ok(Role::Administrator) == role {
+    if Ok(Role::EquipmentManager) == role || Ok(Role::Administrator) == role {
         info!("Try insert container: {container:?}");
         let res =
             crate::database::insert_container::insert_container(&*conn, container.clone()).await;
