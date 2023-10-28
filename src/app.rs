@@ -124,7 +124,8 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
             post({
                 info!("POST /insert_lending");
                 let conn = Arc::clone(&conn);
-                move |body| lending::insert_lending(body, conn)
+                move |TypedHeader(Authorization(bearer)): TypedHeader<Authorization<Bearer>>,
+                      body| lending::insert_lending(bearer, body, conn)
             }),
         )
         .route(
@@ -132,7 +133,8 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
             post({
                 info!("POST /update_lending");
                 let conn = Arc::clone(&conn);
-                move |body| lending::update_lending(body, conn)
+                move |TypedHeader(Authorization(bearer)): TypedHeader<Authorization<Bearer>>,
+                      body| lending::update_lending(bearer, body, conn)
             }),
         )
         .route(
@@ -140,9 +142,10 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
             post({
                 info!("POST /returned_lending");
                 let conn = Arc::clone(&conn);
-                move |Query(query)| {
+                move |TypedHeader(Authorization(bearer)): TypedHeader<Authorization<Bearer>>,
+                      Query(query)| {
                     let now = Utc::now();
-                    lending::returned_lending(query, now, conn)
+                    lending::returned_lending(bearer, query, now, conn)
                 }
             }),
         )
@@ -175,7 +178,8 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
             post({
                 info!("POST /insert_spot");
                 let conn = Arc::clone(&conn);
-                move |body| spot::insert_spot(body, conn)
+                move |TypedHeader(Authorization(bearer)): TypedHeader<Authorization<Bearer>>,
+                      body| spot::insert_spot(bearer, body, conn)
             }),
         )
         .route(
@@ -183,7 +187,8 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
             post({
                 info!("POST /update_spot");
                 let conn = Arc::clone(&conn);
-                move |body| spot::update_spot(body, conn)
+                move |TypedHeader(Authorization(bearer)): TypedHeader<Authorization<Bearer>>,
+                      body| spot::update_spot(bearer, body, conn)
             }),
         )
         .route(
@@ -207,7 +212,8 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
             delete({
                 info!("DELETE /delete_spot");
                 let conn = Arc::clone(&conn);
-                move |Query(query)| spot::delte_spot(query, conn)
+                move |TypedHeader(Authorization(bearer)): TypedHeader<Authorization<Bearer>>,
+                      Query(query)| spot::delte_spot(bearer, query, conn)
             }),
         )
         .route(
@@ -215,7 +221,8 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
             post({
                 info!("POST /insert_container");
                 let conn = Arc::clone(&conn);
-                move |body| container::insert_container(body, conn)
+                move |TypedHeader(Authorization(bearer)): TypedHeader<Authorization<Bearer>>,
+                      body| container::insert_container(bearer, body, conn)
             }),
         )
         .route(
