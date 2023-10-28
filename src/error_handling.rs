@@ -3,7 +3,7 @@ use serde::Serialize;
 use thiserror::Error;
 use tracing::*;
 
-#[derive(Debug, Clone, Error)]
+#[derive(Debug, Clone, Error, PartialEq, Eq)]
 pub enum QrError {
     #[error("Couldn't found {} on environment", .0)]
     Environment(String),
@@ -23,6 +23,8 @@ pub enum QrError {
     DatabaseGet(String),
     #[error("Couldn't found {} query in the url", .0)]
     UrlQuery(String),
+    #[error("Unauthorized")]
+    Authorized,
     #[error("{} is broken UUID", .0)]
     BrokenUuid(String),
     // 外部から投げられたidなどが間違っていて
@@ -86,6 +88,7 @@ where
                 DatabaseDelete(_) => (StatusCode::INTERNAL_SERVER_ERROR, "DatabaseDelete"),
                 DatabaseGet(_) => (StatusCode::INTERNAL_SERVER_ERROR, "DatabaseGet"),
                 UrlQuery(_) => (StatusCode::BAD_REQUEST, "UrlQuery"),
+                Authorized => (StatusCode::UNAUTHORIZED, "Authorized"),
                 BrokenUuid(_) => (StatusCode::BAD_REQUEST, "BrokenUuid"),
                 DatabaseNotFound(_) => (StatusCode::BAD_REQUEST, "DatabaseNotFound"),
                 TokioRuntime => (StatusCode::INTERNAL_SERVER_ERROR, "TokioRutime"),

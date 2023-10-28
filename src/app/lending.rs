@@ -1,8 +1,9 @@
+use crate::certification::{get_role, Role};
 use crate::{
-    error_handling::{result_to_handler_with_log, QrError, ReturnData},
+    error_handling::{result_to_handler, result_to_handler_with_log, QrError, ReturnData},
     Lending,
 };
-use axum::extract::Json;
+use axum::{extract::Json, headers::authorization::Bearer};
 use chrono::{DateTime, Utc};
 use sqlx::{pool::Pool, postgres::Postgres};
 use std::collections::HashMap;
@@ -13,70 +14,82 @@ use uuid::Uuid;
 /// 備品情報の登録を行うエンドポイント
 /// - https://github.com/sohosai/qr-backend/issues/11
 pub async fn insert_lending(
+    bearer: Bearer,
     Json(lending): Json<Lending>,
     conn: Arc<Pool<Postgres>>,
 ) -> ReturnData<()> {
-    info!("Try insert lending: {lending:?}");
-    let res = crate::database::insert_lending::insert_lending(&*conn, lending.clone()).await;
-    result_to_handler_with_log(
-        |_| Some(format!("Success insert lending[{}]", &lending.id)),
-        |e| Some(format!("{e}[{}]", &lending.id)),
-        &res,
-    )
-    .await
+    let role = get_role(&*conn, bearer.token()).await;
+    if Ok(Role::EquipmentManager) == role && Ok(Role::Administrator) == role {
+        info!("Try insert lending: {lending:?}");
+        let res = crate::database::insert_lending::insert_lending(&*conn, lending.clone()).await;
+        result_to_handler_with_log(
+            |_| Some(format!("Success insert lending[{}]", &lending.id)),
+            |e| Some(format!("{e}[{}]", &lending.id)),
+            &res,
+        )
+        .await
+    } else {
+        result_to_handler(&Err(QrError::Authorized)).await
+    }
 }
 
 pub async fn returned_lending(
+    bearer: Bearer,
     query: HashMap<String, String>,
     returned_at: DateTime<Utc>,
     conn: Arc<Pool<Postgres>>,
 ) -> ReturnData<()> {
     use crate::database::get_one_fixtures::*;
     use crate::database::returned_lending::*;
-    match (query.get("id"), query.get("qr_id")) {
-        (Some(id), _) => {
-            let uuid_opt = Uuid::parse_str(id).ok();
-            if let Some(uuid) = uuid_opt {
-                info!("Try get fixtures with uuid: {uuid}");
-                let res = returned_lending(&*conn, uuid, returned_at).await;
-                result_to_handler_with_log(
-                    |_| Some(format!("Success returned lending with uuid[{uuid}]")),
-                    |e| Some(format!("{e} uuid[{uuid}]")),
-                    &res,
-                )
-                .await
-            } else {
-                let err = Err(QrError::BrokenUuid(id.to_string()));
-                result_to_handler_with_log(|_| None, |e| Some(e.to_string()), &err).await
-            }
-        }
-        (_, Some(qr_id)) => {
-            info!("Try get fixtures with qr_id: {qr_id}");
-            let fixtures = get_one_fixtures(&*conn, IdType::QrId(qr_id.clone())).await;
-            match fixtures {
-                Ok(fixtures) => {
-                    let res = returned_lending(&*conn, fixtures.id, returned_at).await;
+    let role = get_role(&*conn, bearer.token()).await;
+    if Ok(Role::EquipmentManager) == role && Ok(Role::Administrator) == role {
+        match (query.get("id"), query.get("qr_id")) {
+            (Some(id), _) => {
+                let uuid_opt = Uuid::parse_str(id).ok();
+                if let Some(uuid) = uuid_opt {
+                    info!("Try get fixtures with uuid: {uuid}");
+                    let res = returned_lending(&*conn, uuid, returned_at).await;
                     result_to_handler_with_log(
-                        |_| Some(format!("Success returned lending with qr_id[{qr_id}]")),
-                        |e| Some(format!("{e} qr_id[{qr_id}]")),
+                        |_| Some(format!("Success returned lending with uuid[{uuid}]")),
+                        |e| Some(format!("{e} uuid[{uuid}]")),
                         &res,
                     )
                     .await
-                }
-                Err(e) => {
-                    result_to_handler_with_log(
-                        |_| None,
-                        |e| Some(format!("{e} qr_id[{qr_id}]")),
-                        &Err(e),
-                    )
-                    .await
+                } else {
+                    let err = Err(QrError::BrokenUuid(id.to_string()));
+                    result_to_handler_with_log(|_| None, |e| Some(e.to_string()), &err).await
                 }
             }
+            (_, Some(qr_id)) => {
+                info!("Try get fixtures with qr_id: {qr_id}");
+                let fixtures = get_one_fixtures(&*conn, IdType::QrId(qr_id.clone())).await;
+                match fixtures {
+                    Ok(fixtures) => {
+                        let res = returned_lending(&*conn, fixtures.id, returned_at).await;
+                        result_to_handler_with_log(
+                            |_| Some(format!("Success returned lending with qr_id[{qr_id}]")),
+                            |e| Some(format!("{e} qr_id[{qr_id}]")),
+                            &res,
+                        )
+                        .await
+                    }
+                    Err(e) => {
+                        result_to_handler_with_log(
+                            |_| None,
+                            |e| Some(format!("{e} qr_id[{qr_id}]")),
+                            &Err(e),
+                        )
+                        .await
+                    }
+                }
+            }
+            _ => {
+                let err = Err(QrError::UrlQuery("qr_id, id".to_string()));
+                result_to_handler_with_log(|_| None, |e| Some(e.to_string()), &err).await
+            }
         }
-        _ => {
-            let err = Err(QrError::UrlQuery("qr_id, id".to_string()));
-            result_to_handler_with_log(|_| None, |e| Some(e.to_string()), &err).await
-        }
+    } else {
+        result_to_handler(&Err(QrError::Authorized)).await
     }
 }
 
@@ -216,15 +229,21 @@ pub async fn get_is_lending(
 }
 
 pub async fn update_lending(
+    bearer: Bearer,
     Json(lending): Json<Lending>,
     conn: Arc<Pool<Postgres>>,
 ) -> ReturnData<()> {
-    info!("Try update lending: {lending:?}");
-    let res = crate::database::update_lending::update_lending(&*conn, lending.clone()).await;
-    result_to_handler_with_log(
-        |_| Some(format!("Success update lending[{}]", lending.id)),
-        |e| Some(format!("{e} lending[{}]", lending.id)),
-        &res,
-    )
-    .await
+    let role = get_role(&*conn, bearer.token()).await;
+    if Ok(Role::EquipmentManager) == role && Ok(Role::Administrator) == role {
+        info!("Try update lending: {lending:?}");
+        let res = crate::database::update_lending::update_lending(&*conn, lending.clone()).await;
+        result_to_handler_with_log(
+            |_| Some(format!("Success update lending[{}]", lending.id)),
+            |e| Some(format!("{e} lending[{}]", lending.id)),
+            &res,
+        )
+        .await
+    } else {
+        result_to_handler(&Err(QrError::Authorized)).await
+    }
 }

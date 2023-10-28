@@ -3,3 +3,5 @@ target
 data.ms
 
 .envrc
+
+.DS_store

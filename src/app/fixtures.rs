@@ -1,8 +1,9 @@
+use crate::certification::{get_role, Role};
 use crate::database::get_one_fixtures::{get_one_fixtures, IdType};
-use crate::error_handling::{result_to_handler_with_log, QrError, ReturnData};
+use crate::error_handling::{result_to_handler, result_to_handler_with_log, QrError, ReturnData};
 use crate::search_engine::{SearchFixtures, SearchResult};
 use crate::Fixtures;
-use axum::extract::Json;
+use axum::{extract::Json, headers::authorization::Bearer};
 use sqlx::{pool::Pool, postgres::Postgres};
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -12,111 +13,129 @@ use uuid::Uuid;
 /// 備品情報の登録を行うエンドポイント
 /// - https://github.com/sohosai/qr-backend/issues/11
 pub async fn insert_fixtures(
+    bearer: Bearer,
     Json(fixtures): Json<Fixtures>,
     conn: Arc<Pool<Postgres>>,
     context: Arc<SearchFixtures>,
 ) -> ReturnData<()> {
-    info!("Try insert fixtures: {fixtures:?}");
-    let res = crate::database::insert_fixtures::insert_fixtures(&*conn, fixtures.clone()).await;
+    let role = get_role(&*conn, bearer.token()).await;
+    if Ok(Role::EquipmentManager) == role && Ok(Role::Administrator) == role {
+        info!("Try insert fixtures: {fixtures:?}");
+        let res = crate::database::insert_fixtures::insert_fixtures(&*conn, fixtures.clone()).await;
 
-    // DBの処理が成功した時の結果
-    let r1 = result_to_handler_with_log(
-        |_| Some(format!("Success insert fixtures(DB)[{}]", &fixtures.id)),
-        |e| Some(format!("{e}[{}]", &fixtures.id)),
-        &res,
-    )
-    .await;
-
-    if res.is_ok() {
-        let res = context.add_or_replace(&[fixtures.clone()]).await;
-        result_to_handler_with_log(
-            |_| {
-                Some(format!(
-                    "Success insert fixtures(Search Engine)[{}]",
-                    &fixtures.id
-                ))
-            },
+        // DBの処理が成功した時の結果
+        let r1 = result_to_handler_with_log(
+            |_| Some(format!("Success insert fixtures(DB)[{}]", &fixtures.id)),
             |e| Some(format!("{e}[{}]", &fixtures.id)),
             &res,
         )
-        .await
+        .await;
+
+        if res.is_ok() {
+            let res = context.add_or_replace(&[fixtures.clone()]).await;
+            result_to_handler_with_log(
+                |_| {
+                    Some(format!(
+                        "Success insert fixtures(Search Engine)[{}]",
+                        &fixtures.id
+                    ))
+                },
+                |e| Some(format!("{e}[{}]", &fixtures.id)),
+                &res,
+            )
+            .await
+        } else {
+            r1
+        }
     } else {
-        r1
+        result_to_handler(&Err(QrError::Authorized)).await
     }
 }
 
 pub async fn update_fixtures(
+    bearer: Bearer,
     Json(fixtures): Json<Fixtures>,
     conn: Arc<Pool<Postgres>>,
     context: Arc<SearchFixtures>,
 ) -> ReturnData<()> {
-    info!("Try update fixtures: {fixtures:?}");
-    let res = crate::database::update_fixtures::update_fixtures(&*conn, fixtures.clone()).await;
+    let role = get_role(&*conn, bearer.token()).await;
+    if Ok(Role::EquipmentManager) == role && Ok(Role::Administrator) == role {
+        info!("Try update fixtures: {fixtures:?}");
+        let res = crate::database::update_fixtures::update_fixtures(&*conn, fixtures.clone()).await;
 
-    // DBの処理が成功した時の結果
-    let r1 = result_to_handler_with_log(
-        |_| Some(format!("Success update fixtures(DB)[{}]", &fixtures.id)),
-        |e| Some(format!("{e}[{}]", &fixtures.id)),
-        &res,
-    )
-    .await;
-
-    if res.is_ok() {
-        let res = context.add_or_replace(&[fixtures.clone()]).await;
-        result_to_handler_with_log(
-            |_| {
-                Some(format!(
-                    "Success update fixtures(Search Engine)[{}]",
-                    &fixtures.id
-                ))
-            },
+        // DBの処理が成功した時の結果
+        let r1 = result_to_handler_with_log(
+            |_| Some(format!("Success update fixtures(DB)[{}]", &fixtures.id)),
             |e| Some(format!("{e}[{}]", &fixtures.id)),
             &res,
         )
-        .await
+        .await;
+
+        if res.is_ok() {
+            let res = context.add_or_replace(&[fixtures.clone()]).await;
+            result_to_handler_with_log(
+                |_| {
+                    Some(format!(
+                        "Success update fixtures(Search Engine)[{}]",
+                        &fixtures.id
+                    ))
+                },
+                |e| Some(format!("{e}[{}]", &fixtures.id)),
+                &res,
+            )
+            .await
+        } else {
+            r1
+        }
     } else {
-        r1
+        result_to_handler(&Err(QrError::Authorized)).await
     }
 }
 
 pub async fn delete_fixtures(
+    bearer: Bearer,
     query: HashMap<String, String>,
     conn: Arc<Pool<Postgres>>,
     context: Arc<SearchFixtures>,
 ) -> ReturnData<()> {
-    let id_opt = query.get("id");
-    if let Some(id) = id_opt {
-        let uuid_opt = Uuid::parse_str(id).ok();
-        if let Some(uuid) = uuid_opt {
-            info!("Try delete fixtures: {uuid}");
-            let res = crate::database::delete_fixtures::delete_fixtures(&*conn, uuid).await;
+    let role = get_role(&*conn, bearer.token()).await;
+    if Ok(Role::Administrator) == role {
+        let id_opt = query.get("id");
+        if let Some(id) = id_opt {
+            let uuid_opt = Uuid::parse_str(id).ok();
+            if let Some(uuid) = uuid_opt {
+                info!("Try delete fixtures: {uuid}");
+                let res = crate::database::delete_fixtures::delete_fixtures(&*conn, uuid).await;
 
-            // DBの処理が成功した時の結果
-            let r1 = result_to_handler_with_log(
-                |_| Some(format!("Success delete fixtures(DB)[{uuid}]")),
-                |e| Some(format!("{e}[{uuid}]")),
-                &res,
-            )
-            .await;
-
-            if res.is_ok() {
-                let res = context.delete(&[uuid]).await;
-                result_to_handler_with_log(
-                    |_| Some(format!("Success delete fixtures(Search Engine)[{uuid}]")),
+                // DBの処理が成功した時の結果
+                let r1 = result_to_handler_with_log(
+                    |_| Some(format!("Success delete fixtures(DB)[{uuid}]")),
                     |e| Some(format!("{e}[{uuid}]")),
                     &res,
                 )
-                .await
+                .await;
+
+                if res.is_ok() {
+                    let res = context.delete(&[uuid]).await;
+                    result_to_handler_with_log(
+                        |_| Some(format!("Success delete fixtures(Search Engine)[{uuid}]")),
+                        |e| Some(format!("{e}[{uuid}]")),
+                        &res,
+                    )
+                    .await
+                } else {
+                    r1
+                }
             } else {
-                r1
+                let err = Err(QrError::BrokenUuid(id.to_string()));
+                result_to_handler_with_log(|_| None, |e| Some(e.to_string()), &err).await
             }
         } else {
-            let err = Err(QrError::BrokenUuid(id.to_string()));
+            let err = Err(QrError::UrlQuery("id".to_string()));
             result_to_handler_with_log(|_| None, |e| Some(e.to_string()), &err).await
         }
     } else {
-        let err = Err(QrError::UrlQuery("id".to_string()));
-        result_to_handler_with_log(|_| None, |e| Some(e.to_string()), &err).await
+        result_to_handler(&Err(QrError::Authorized)).await
     }
 }
 

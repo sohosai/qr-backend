@@ -1,12 +1,13 @@
 use crate::error_handling::{QrError, Result};
 use axum::{
-    extract::Query,
+    extract::{Query, TypedHeader},
+    headers::authorization::{Authorization, Basic, Bearer},
     http::Method,
     routing::{delete, get, post},
     Router,
 };
 use chrono::Utc;
-use reqwest::header::CONTENT_TYPE;
+use reqwest::header::{AUTHORIZATION, CONTENT_TYPE};
 use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::sync::Arc;
@@ -15,6 +16,8 @@ use tracing::*;
 
 use crate::search_engine;
 
+/// 認証まわりのエンドポイントの定義
+pub mod certification;
 /// コンテナの管理を行うエンドポイントの定義
 pub mod container;
 /// 物品情報の登録を行うエンドポイントの定義
@@ -65,7 +68,10 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
                 info!("POST /insert_fixtures");
                 let conn = Arc::clone(&conn);
                 let context = Arc::clone(&search_fixtures_context);
-                move |body| fixtures::insert_fixtures(body, conn, context)
+                move |TypedHeader(Authorization(bearer)): TypedHeader<Authorization<Bearer>>,
+                      body| {
+                    fixtures::insert_fixtures(bearer, body, conn, context)
+                }
             }),
         )
         .route(
@@ -74,7 +80,8 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
                 info!("POST /update_fixtures");
                 let conn = Arc::clone(&conn);
                 let context = Arc::clone(&search_fixtures_context);
-                move |body| fixtures::update_fixtures(body, conn, context)
+                move |TypedHeader(Authorization(bearer)): TypedHeader<Authorization<Bearer>>,
+                      body| fixtures::update_fixtures(bearer, body, conn, context)
             }),
         )
         .route(
@@ -83,7 +90,10 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
                 info!("DELETE /delete_fixtures");
                 let conn = Arc::clone(&conn);
                 let context = Arc::clone(&search_fixtures_context);
-                move |Query(query)| fixtures::delete_fixtures(query, conn, context)
+                move |TypedHeader(Authorization(bearer)): TypedHeader<Authorization<Bearer>>,
+                      Query(query)| {
+                    fixtures::delete_fixtures(bearer, query, conn, context)
+                }
             }),
         )
         .route(
@@ -114,7 +124,8 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
             post({
                 info!("POST /insert_lending");
                 let conn = Arc::clone(&conn);
-                move |body| lending::insert_lending(body, conn)
+                move |TypedHeader(Authorization(bearer)): TypedHeader<Authorization<Bearer>>,
+                      body| lending::insert_lending(bearer, body, conn)
             }),
         )
         .route(
@@ -122,7 +133,8 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
             post({
                 info!("POST /update_lending");
                 let conn = Arc::clone(&conn);
-                move |body| lending::update_lending(body, conn)
+                move |TypedHeader(Authorization(bearer)): TypedHeader<Authorization<Bearer>>,
+                      body| lending::update_lending(bearer, body, conn)
             }),
         )
         .route(
@@ -130,9 +142,10 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
             post({
                 info!("POST /returned_lending");
                 let conn = Arc::clone(&conn);
-                move |Query(query)| {
+                move |TypedHeader(Authorization(bearer)): TypedHeader<Authorization<Bearer>>,
+                      Query(query)| {
                     let now = Utc::now();
-                    lending::returned_lending(query, now, conn)
+                    lending::returned_lending(bearer, query, now, conn)
                 }
             }),
         )
@@ -165,7 +178,8 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
             post({
                 info!("POST /insert_spot");
                 let conn = Arc::clone(&conn);
-                move |body| spot::insert_spot(body, conn)
+                move |TypedHeader(Authorization(bearer)): TypedHeader<Authorization<Bearer>>,
+                      body| spot::insert_spot(bearer, body, conn)
             }),
         )
         .route(
@@ -173,7 +187,8 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
             post({
                 info!("POST /update_spot");
                 let conn = Arc::clone(&conn);
-                move |body| spot::update_spot(body, conn)
+                move |TypedHeader(Authorization(bearer)): TypedHeader<Authorization<Bearer>>,
+                      body| spot::update_spot(bearer, body, conn)
             }),
         )
         .route(
@@ -197,7 +212,8 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
             delete({
                 info!("DELETE /delete_spot");
                 let conn = Arc::clone(&conn);
-                move |Query(query)| spot::delte_spot(query, conn)
+                move |TypedHeader(Authorization(bearer)): TypedHeader<Authorization<Bearer>>,
+                      Query(query)| spot::delte_spot(bearer, query, conn)
             }),
         )
         .route(
@@ -205,13 +221,24 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
             post({
                 info!("POST /insert_container");
                 let conn = Arc::clone(&conn);
-                move |body| container::insert_container(body, conn)
+                move |TypedHeader(Authorization(bearer)): TypedHeader<Authorization<Bearer>>,
+                      body| container::insert_container(bearer, body, conn)
+            }),
+        )
+        .route(
+            "/gen_passtoken",
+            post({
+                info!("POST /gen_passtoken");
+                let conn = Arc::clone(&conn);
+                move |TypedHeader(Authorization(basic)): TypedHeader<Authorization<Basic>>| {
+                    certification::api_gen_passtoken(basic, conn)
+                }
             }),
         )
         .layer(
             CorsLayer::new()
                 .allow_methods([Method::GET, Method::POST, Method::DELETE])
-                .allow_headers([CONTENT_TYPE])
+                .allow_headers([CONTENT_TYPE, AUTHORIZATION])
                 .allow_origin(Any),
         );
 

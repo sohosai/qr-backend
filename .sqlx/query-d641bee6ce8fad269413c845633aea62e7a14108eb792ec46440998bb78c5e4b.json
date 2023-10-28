@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n    INSERT INTO passtoken (\n        token,\n        role,\n        created_at,\n        limit_days\n    ) VALUES ( $1, $2, $3, $4 )",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Timestamptz",
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "d641bee6ce8fad269413c845633aea62e7a14108eb792ec46440998bb78c5e4b"
+}

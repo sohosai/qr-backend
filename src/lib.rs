@@ -10,6 +10,8 @@ use uuid::Uuid;
 // とりあえず後で実装しそうなものをちょっとだけ用意しておく
 /// サーバーの実体
 pub mod app;
+/// 認証まわりをやるところ
+pub mod certification;
 /// データベース周りのモジュール
 pub mod database;
 /// エラーハンドリング周り

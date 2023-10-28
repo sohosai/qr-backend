@@ -1,0 +1,64 @@
+2023-10-26 15:55:27.166 JST [13295] LOG:  starting PostgreSQL 14.9 (Homebrew) on x86_64-apple-darwin21.6.0, compiled by Apple clang version 14.0.0 (clang-1400.0.29.202), 64-bit
+2023-10-26 15:55:27.168 JST [13295] LOG:  listening on IPv6 address "::1", port 5432
+2023-10-26 15:55:27.168 JST [13295] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+2023-10-26 15:55:27.169 JST [13295] LOG:  listening on Unix socket "/tmp/.s.PGSQL.5432"
+2023-10-26 15:55:27.175 JST [13296] LOG:  database system was shut down at 2023-10-26 15:55:02 JST
+2023-10-26 15:55:27.179 JST [13295] LOG:  database system is ready to accept connections
+2023-10-26 15:55:40.431 JST [13323] FATAL:  role "postgres" does not exist
+2023-10-26 15:56:08.689 JST [13357] ERROR:  syntax error at or near ":" at character 62
+2023-10-26 15:56:08.689 JST [13357] STATEMENT:  CREATE TABLE passtoken (
+	    token text PRIMARY KEY,
+	    role: text NOT NULL,
+	    created_at timestamptz NOT NULL,
+	    limit_day: int NOT NULL,
+	);
+	
+2023-10-26 15:56:08.689 JST [13357] LOG:  could not receive data from client: Connection reset by peer
+2023-10-26 15:56:20.094 JST [13373] ERROR:  syntax error at or near ":" at character 62
+2023-10-26 15:56:20.094 JST [13373] STATEMENT:  CREATE TABLE passtoken (
+	    token text PRIMARY KEY,
+	    role: text NOT NULL,
+	    created_at: timestamptz NOT NULL,
+	    limit_day: int NOT NULL,
+	);
+	
+2023-10-26 15:56:20.095 JST [13373] LOG:  could not receive data from client: Connection reset by peer
+2023-10-26 15:56:21.881 JST [13391] ERROR:  syntax error at or near ":" at character 62
+2023-10-26 15:56:21.881 JST [13391] STATEMENT:  CREATE TABLE passtoken (
+	    token text PRIMARY KEY,
+	    role: text NOT NULL,
+	    created_at: timestamptz NOT NULL,
+	    limit_day: int NOT NULL,
+	);
+	
+2023-10-26 15:56:21.881 JST [13391] LOG:  could not receive data from client: Connection reset by peer
+2023-10-26 15:56:34.114 JST [13420] ERROR:  syntax error at or near ":" at character 62
+2023-10-26 15:56:34.114 JST [13420] STATEMENT:  CREATE TABLE passtoken (
+	    token text PRIMARY KEY,
+	    role: text NOT NULL,
+	    created_at: timestamptz NOT NULL,
+	    limit_day: int NOT NULL,
+	);
+	
+2023-10-26 15:56:34.115 JST [13420] LOG:  could not receive data from client: Connection reset by peer
+2023-10-26 15:56:44.258 JST [13430] ERROR:  syntax error at or near ":" at character 35
+2023-10-26 15:56:44.258 JST [13430] STATEMENT:  CREATE TABLE passtoken (
+	    token: text PRIMARY KEY,
+	    role: text NOT NULL,
+	    created_at: timestamptz NOT NULL,
+	    limit_day: int NOT NULL,
+	);
+	
+2023-10-26 15:56:44.259 JST [13430] LOG:  could not receive data from client: Connection reset by peer
+2023-10-26 15:56:46.158 JST [13443] ERROR:  syntax error at or near ":" at character 35
+2023-10-26 15:56:46.158 JST [13443] STATEMENT:  CREATE TABLE passtoken (
+	    token: text PRIMARY KEY,
+	    role: text NOT NULL,
+	    created_at: timestamptz NOT NULL,
+	    limit_day: int NOT NULL,
+	);
+	
+2023-10-27 03:06:56.693 JST [13295] LOG:  received smart shutdown request
+2023-10-27 03:06:56.696 JST [13295] LOG:  background worker "logical replication launcher" (PID 13302) exited with exit code 1
+2023-10-27 03:06:56.696 JST [13297] LOG:  shutting down
+2023-10-27 03:06:56.710 JST [13295] LOG:  database system is shut down
