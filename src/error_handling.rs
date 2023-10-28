@@ -100,7 +100,7 @@ where
             (
                 code,
                 Json(Msg {
-                    ok: true,
+                    ok: false,
                     data: None,
                     error_type: Some(error_type.to_string()),
                     error_message: Some(e.to_string()),
