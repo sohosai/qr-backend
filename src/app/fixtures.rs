@@ -1,4 +1,4 @@
-use crate::certification::{get_role, Role};
+use crate::authentication::{get_role, Role};
 use crate::database::get_one_fixtures::{get_one_fixtures, IdType};
 use crate::error_handling::{result_to_handler, result_to_handler_with_log, QrError, ReturnData};
 use crate::search_engine::{SearchFixtures, SearchResult};

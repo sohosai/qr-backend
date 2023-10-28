@@ -1,4 +1,4 @@
-use crate::certification::{get_role, Role};
+use crate::authentication::{get_role, Role};
 use crate::{
     error_handling::{result_to_handler, result_to_handler_with_log, QrError, ReturnData},
     Container,
