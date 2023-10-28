@@ -17,7 +17,7 @@ use tracing::*;
 use crate::search_engine;
 
 /// 認証まわりのエンドポイントの定義
-pub mod certification;
+pub mod authentication;
 /// コンテナの管理を行うエンドポイントの定義
 pub mod container;
 /// 物品情報の登録を行うエンドポイントの定義
@@ -231,7 +231,7 @@ pub async fn app(bind: SocketAddr) -> Result<()> {
                 info!("POST /gen_passtoken");
                 let conn = Arc::clone(&conn);
                 move |TypedHeader(Authorization(basic)): TypedHeader<Authorization<Basic>>| {
-                    certification::api_gen_passtoken(basic, conn)
+                    authentication::api_gen_passtoken(basic, conn)
                 }
             }),
         )

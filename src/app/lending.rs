@@ -1,4 +1,4 @@
-use crate::certification::{get_role, Role};
+use crate::authentication::{get_role, Role};
 use crate::{
     error_handling::{result_to_handler, result_to_handler_with_log, QrError, ReturnData},
     Lending,
@@ -19,7 +19,7 @@ pub async fn insert_lending(
     conn: Arc<Pool<Postgres>>,
 ) -> ReturnData<()> {
     let role = get_role(&*conn, bearer.token()).await;
-    if Ok(Role::EquipmentManager) == role && Ok(Role::Administrator) == role {
+    if Ok(Role::EquipmentManager) == role || Ok(Role::Administrator) == role {
         info!("Try insert lending: {lending:?}");
         let res = crate::database::insert_lending::insert_lending(&*conn, lending.clone()).await;
         result_to_handler_with_log(
@@ -42,7 +42,7 @@ pub async fn returned_lending(
     use crate::database::get_one_fixtures::*;
     use crate::database::returned_lending::*;
     let role = get_role(&*conn, bearer.token()).await;
-    if Ok(Role::EquipmentManager) == role && Ok(Role::Administrator) == role {
+    if Ok(Role::EquipmentManager) == role || Ok(Role::Administrator) == role {
         match (query.get("id"), query.get("qr_id")) {
             (Some(id), _) => {
                 let uuid_opt = Uuid::parse_str(id).ok();
@@ -234,7 +234,7 @@ pub async fn update_lending(
     conn: Arc<Pool<Postgres>>,
 ) -> ReturnData<()> {
     let role = get_role(&*conn, bearer.token()).await;
-    if Ok(Role::EquipmentManager) == role && Ok(Role::Administrator) == role {
+    if Ok(Role::EquipmentManager) == role || Ok(Role::Administrator) == role {
         info!("Try update lending: {lending:?}");
         let res = crate::database::update_lending::update_lending(&*conn, lending.clone()).await;
         result_to_handler_with_log(

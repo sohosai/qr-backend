@@ -11,7 +11,7 @@ use uuid::Uuid;
 /// サーバーの実体
 pub mod app;
 /// 認証まわりをやるところ
-pub mod certification;
+pub mod authentication;
 /// データベース周りのモジュール
 pub mod database;
 /// エラーハンドリング周り

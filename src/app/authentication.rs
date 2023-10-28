@@ -1,5 +1,5 @@
 use crate::{
-    certification::{self, str_to_role_opt},
+    authentication::{self, str_to_role_opt},
     error_handling::{result_to_handler_with_log, QrError, Result, ReturnData},
 };
 use axum::headers::authorization::Basic;
@@ -23,8 +23,8 @@ pub async fn gen_passtoken(token_info: Basic, conn: Arc<Pool<Postgres>>) -> Resu
     let key = token_info.password();
     match str_to_role_opt(role_str) {
         Some(role) => {
-            let passtoken = certification::gen_passtoken(role, key)?;
-            certification::insert_passtoken(&*conn, &passtoken).await?;
+            let passtoken = authentication::gen_passtoken(role, key)?;
+            authentication::insert_passtoken(&*conn, &passtoken).await?;
             Ok(passtoken.token)
         }
         None => Err(QrError::Authorized),

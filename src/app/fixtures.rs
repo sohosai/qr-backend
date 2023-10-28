@@ -1,4 +1,4 @@
-use crate::certification::{get_role, Role};
+use crate::authentication::{get_role, Role};
 use crate::database::get_one_fixtures::{get_one_fixtures, IdType};
 use crate::error_handling::{result_to_handler, result_to_handler_with_log, QrError, ReturnData};
 use crate::search_engine::{SearchFixtures, SearchResult};
@@ -19,7 +19,7 @@ pub async fn insert_fixtures(
     context: Arc<SearchFixtures>,
 ) -> ReturnData<()> {
     let role = get_role(&*conn, bearer.token()).await;
-    if Ok(Role::EquipmentManager) == role && Ok(Role::Administrator) == role {
+    if Ok(Role::EquipmentManager) == role || Ok(Role::Administrator) == role {
         info!("Try insert fixtures: {fixtures:?}");
         let res = crate::database::insert_fixtures::insert_fixtures(&*conn, fixtures.clone()).await;
 
@@ -59,7 +59,7 @@ pub async fn update_fixtures(
     context: Arc<SearchFixtures>,
 ) -> ReturnData<()> {
     let role = get_role(&*conn, bearer.token()).await;
-    if Ok(Role::EquipmentManager) == role && Ok(Role::Administrator) == role {
+    if Ok(Role::EquipmentManager) == role || Ok(Role::Administrator) == role {
         info!("Try update fixtures: {fixtures:?}");
         let res = crate::database::update_fixtures::update_fixtures(&*conn, fixtures.clone()).await;
 
