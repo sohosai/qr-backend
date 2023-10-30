@@ -6,6 +6,7 @@ use rand::{
 };
 use serde::{Deserialize, Serialize};
 use std::env;
+use unicode_normalization::UnicodeNormalization;
 use uuid::Uuid;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, sqlx::FromRow)]
@@ -107,7 +108,7 @@ pub fn gen_passtoken(role: Role, key: &str) -> Result<Passtoken> {
                 .map_err(|_| QrError::Environment("ADMINISTRATOR_LIMIT_DAYS".to_string()))?
                 .parse::<usize>()
                 .map_err(|_| QrError::Environment("ADMINISTRATOR_LIMIT_DAYS".to_string()))?;
-            if key == pass {
+            if key.nfc().collect::<String>() == pass.nfc().collect::<String>() {
                 Ok(Passtoken::new(role, limit_days))
             } else {
                 Err(QrError::Authorized)
@@ -120,7 +121,7 @@ pub fn gen_passtoken(role: Role, key: &str) -> Result<Passtoken> {
                 .map_err(|_| QrError::Environment("EQUIPMENT_MANAGER_LIMIT_DAYS".to_string()))?
                 .parse::<usize>()
                 .map_err(|_| QrError::Environment("EQUIPMENT_MANAGER_LIMIT_DAYS".to_string()))?;
-            if key == pass {
+            if key.nfc().collect::<String>() == pass.nfc().collect::<String>() {
                 Ok(Passtoken::new(role, limit_days))
             } else {
                 Err(QrError::Authorized)
@@ -133,7 +134,7 @@ pub fn gen_passtoken(role: Role, key: &str) -> Result<Passtoken> {
                 .map_err(|_| QrError::Environment("GENERAL_LIMIT_DAYS".to_string()))?
                 .parse::<usize>()
                 .map_err(|_| QrError::Environment("GENERAL_LIMIT_DAYS".to_string()))?;
-            if key == pass {
+            if key.nfc().collect::<String>() == pass.nfc().collect::<String>() {
                 Ok(Passtoken::new(role, limit_days))
             } else {
                 Err(QrError::Authorized)
