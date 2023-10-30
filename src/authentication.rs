@@ -6,8 +6,8 @@ use rand::{
 };
 use serde::{Deserialize, Serialize};
 use std::env;
-use uuid::Uuid;
 use unicode_normalization::UnicodeNormalization;
+use uuid::Uuid;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, sqlx::FromRow)]
 pub struct Passtoken {
