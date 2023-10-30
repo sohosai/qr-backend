@@ -9,11 +9,17 @@
 ### Added
 
 - エリア情報に大学会館と動く時の2種類を追加 ([\#115](https://github.com/sohosai/qr-backend/issues/115), [\#119](https://github.com/sohosai/qr-backend/pull/119))
+- 位置情報に備考を追加([\#126](https://github.com/sohosai/qr-backend/pull/118))
+- 認証を追加([\#128](https://github.com/sohosai/qr-backend/pull/128), [\#129](https://github.com/sohosai/qr-backend/pull/129), [\#130](https://github.com/sohosai/qr-backend/pull/130))
 
 ### Changed
 
 - Meilisearchのdocker imageを日本語用のものにした ([\#117](https://github.com/sohosai/qr-backend/issues/117), [\#118](https://github.com/sohosai/qr-backend/pull/118))
+- エラーハンドリングと応答周りをまともにした([\#127](https://github.com/sohosai/qr-backend/pull/127))
 
+### Fixed
+
+- パニックにメッセージがなかったところを修正([\#122](https://github.com/sohosai/qr-backend/pull/122))
 
 ## [1.0.0] - 2023-10-15
 
