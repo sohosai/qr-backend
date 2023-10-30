@@ -21,5 +21,6 @@ tokio = { version = "1.29.1", features = ["full"] }
 tower-http = { version = "0.4.4", features = ["cors"] }
 tracing = "0.1.37"
 tracing-subscriber = "0.3.17"
+unicode-normalization = "0.1.22"
 url = "2.4.0"
 uuid = { version = "1.4.0", features = ["serde", "v4"] }
