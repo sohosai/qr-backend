@@ -38,7 +38,7 @@ pub async fn update_spot(
     conn: Arc<Pool<Postgres>>,
 ) -> ReturnData<()> {
     let role = get_role(&*conn, bearer.token()).await;
-    if Ok(Role::EquipmentManager) == role && Ok(Role::Administrator) == role {
+    if Ok(Role::EquipmentManager) == role || Ok(Role::Administrator) == role {
         info!("Try update spot: {spot:?}");
         let res = crate::database::update_spot::update_spot(&*conn, spot.clone()).await;
         result_to_handler_with_log(
