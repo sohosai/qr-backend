@@ -6,6 +6,8 @@
 
 ## [Unreleased]
 
+## [2.0.0] - 2023-10-30
+
 ### Added
 
 - エリア情報に大学会館と動く時の2種類を追加 ([\#115](https://github.com/sohosai/qr-backend/issues/115), [\#119](https://github.com/sohosai/qr-backend/pull/119))
@@ -37,6 +39,7 @@
 
 
 
-[Unreleased]: https://github.com/sohosai/qr-backend/compare/1.0.0...HEAD
+[Unreleased]: https://github.com/sohosai/qr-backend/compare/2.0.0...HEAD
+[2.0.0]: https://github.com/sohosai/qr-backend/compare/1.0.0...2.0.0
 [1.0.0]: https://github.com/sohosai/qr-backend/compare/b36d897...1.0.0
 

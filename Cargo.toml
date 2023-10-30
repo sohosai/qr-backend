@@ -1,7 +1,7 @@
 [package]
 name = "qr-backend"
 authors = ["momeemt <me@momee.mt>", "puripuri2100 <puripuri2100@gmail.com>"]
-version = "1.0.0"
+version = "2.0.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
