@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT * FROM fixtures WHERE parent_id = $1",
+  "query": "SELECT * FROM fixtures",
   "describe": {
     "columns": [
       {
@@ -65,9 +65,7 @@
       }
     ],
     "parameters": {
-      "Left": [
-        "Text"
-      ]
+      "Left": []
     },
     "nullable": [
       false,
@@ -84,5 +82,5 @@
       false
     ]
   },
-  "hash": "65a57cb33f738c85e308f46dbcc6d024b7d72056d06ac2754d3ab8e38a815936"
+  "hash": "fbaf46a14dc293fb2fd0a814f9286b6f590dc0ee22639028a3e245bbbe28bab1"
 }

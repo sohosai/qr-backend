@@ -1,0 +1,14 @@
+{
+	"status": "valid",
+	"contact": [
+		"mailto:jsys@sohosai.com"
+	],
+	"termsOfServiceAgreed": true,
+	"externalAccountBinding": {
+		"protected": "eyJhbGciOiJIUzI1NiIsImtpZCI6InZ5TUlGMUoyYkVnM19IcktQTHNqYlEiLCJ1cmwiOiJodHRwczovL2FjbWUuemVyb3NzbC5jb20vdjIvRFY5MC9uZXdBY2NvdW50In0",
+		"payload": "eyJjcnYiOiJQLTI1NiIsImt0eSI6IkVDIiwieCI6IjlOVThRX2FXc1V2eW13VlhSbDVoYmM4QWx5NG9MOFBqVDdGUUdCUnhTb0UiLCJ5IjoiRU1XSnJaSm4tNVA5VTZ6aENValJ4cEtTaTlkY21ldkh3aUNEQjhaRFhacyJ9",
+		"signature": "j910X3XYF985k4xlF80sUzQtSSQ3PQbpEgG-76diGgA"
+	},
+	"orders": "https://acme.zerossl.com/v2/DV90/account/vyMIF1J2bEg3_HrKPLsjbQ/orders",
+	"location": "https://acme.zerossl.com/v2/DV90/account/vyMIF1J2bEg3_HrKPLsjbQ"
+}
