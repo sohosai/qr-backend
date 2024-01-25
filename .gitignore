@@ -1,9 +1,9 @@
 target
 
+caddy
+
 data.ms
 
 .envrc
 
 .DS_store
-
-caddy
